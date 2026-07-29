@@ -26,15 +26,15 @@ Implementado:
 - conexão configurável com MongoDB Atlas;
 - criação, listagem paginada e consulta de clientes;
 - contratos compartilhados e persistência de propostas;
-- motor de decisão, criação, listagem e consulta de propostas.
+- motor de decisão, criação, listagem e consulta de propostas;
+- seed fictício de clientes e propostas.
 
 Em execução:
 
-- seed fictício de clientes e propostas.
+- Swagger / OpenAPI;
 
 Não implementado:
 
-- Swagger / OpenAPI;
 - telas de clientes e propostas;
 - autenticação;
 - dashboard;
@@ -402,6 +402,34 @@ A tradução de erros Zod para a resposta HTTP é compartilhada pelas rotas de c
 
 Decisões manuais, edição de propostas decididas e juros continuam fora deste fluxo.
 
+### 9.9 Seed de demonstração
+
+O comando `pnpm seed` gera uma carga integralmente fictícia com Faker no locale `pt_BR`:
+
+- 500 clientes com documentos iniciados por `FAKE-` e e-mails no domínio reservado `example.test`;
+- 1.000 propostas distribuídas nos 12 meses anteriores à data de referência;
+- 200 propostas para cada cenário final: aprovada, reprovada, análise manual, suspeita de fraude e documentos pendentes;
+- nenhum usuário, analista ou decisão manual.
+
+A mesma seed numérica e a mesma data de referência reproduzem os mesmos registros, inclusive identificadores, valores e datas. Os cinco primeiros identificadores de proposta são estáveis e representam, nessa ordem, os cinco cenários obrigatórios:
+
+| Identificador | Status |
+| --- | --- |
+| `660000000000000000000001` | `approved` |
+| `660000000000000000000002` | `rejected` |
+| `660000000000000000000003` | `manual_review` |
+| `660000000000000000000004` | `fraud_suspected` |
+| `660000000000000000000005` | `pending_documents` |
+
+O gerador valida entradas pelos contratos compartilhados e chama o mesmo motor puro usado pelo service. Status, risco, comprometimento e motivos não são definidos por uma segunda implementação.
+
+A execução exige duas confirmações independentes:
+
+- `SEED_ALLOW_WRITE=true`;
+- `SEED_DATABASE_CONFIRMATION` exatamente igual a `MONGODB_DATABASE`.
+
+Bancos cujo nome identifica produção são rejeitados. Cada documento gerado recebe o metadado interno `seedKey`, oculto das consultas comuns e ausente dos contratos públicos. Uma nova execução remove somente documentos com a mesma chave e substitui clientes e propostas em uma transação. Assim, dados sem o marcador não são apagados e uma falha não deixa carga parcial.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -461,6 +489,8 @@ Decisões manuais, edição de propostas decididas e juros continuam fora deste 
 | 2026-07-29 | Manter o motor de decisão em funções puras | Testar cálculos, fronteiras e precedência sem infraestrutura |
 | 2026-07-29 | Fazer o service depender de interfaces estruturais mínimas | Aplicar inversão de dependência sem criar classes ou adapters genéricos |
 | 2026-07-29 | Compartilhar somente a tradução de erros Zod para HTTP | Remover duplicação real entre rotas sem centralizar comportamentos de domínio |
+| 2026-07-29 | Reutilizar contratos e motor de decisão no seed | Manter os dados demonstrativos coerentes com o comportamento real da API |
+| 2026-07-29 | Marcar e substituir o seed em transação com autorização explícita | Permitir reexecução segura sem excluir dados externos à carga |
 
 ## 13. Atualização deste documento
 

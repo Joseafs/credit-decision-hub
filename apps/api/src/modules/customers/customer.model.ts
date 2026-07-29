@@ -44,6 +44,12 @@ const customerModelSchema = new Schema(
       default: Date.now,
       immutable: true,
     },
+    seedKey: {
+      type: String,
+      default: null,
+      select: false,
+      index: true,
+    },
   },
   {
     collection: "customers",

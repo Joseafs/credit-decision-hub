@@ -149,6 +149,12 @@ const proposalModelSchema = new Schema(
         message: "A proposta deve possuir histórico",
       },
     },
+    seedKey: {
+      type: String,
+      default: null,
+      select: false,
+      index: true,
+    },
   },
   {
     collection: "proposals",

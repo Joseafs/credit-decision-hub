@@ -33,59 +33,51 @@ As decisões de produto pertencem ao [`README.md`](./README.md). As decisões t�
 
 | Ordem | ID | Fase | Estado | Entrega |
 | --- | --- | --- | --- | --- |
-| 1 | `CDH-007` | 2 | `ACTIVE` | Criar seed de dados fictícios |
-| 2 | `CDH-008` | 2 | `NEXT` | Documentar API com Swagger / OpenAPI |
-| 3 | `CDH-009` | 3 | `PLANNED` | Implementar fluxo front-end de clientes |
-| 4 | `CDH-010` | 3 | `PLANNED` | Implementar fluxo front-end de propostas |
-| 5 | `CDH-011` | 3 | `PLANNED` | Implementar filtros e estados de navegação |
-| 6 | `CDH-012` | 4 | `PLANNED` | Definir e implementar autenticação e permissões |
-| 7 | `CDH-013` | 4 | `PLANNED` | Implementar dashboard e auditoria |
-| 8 | `CDH-014` | 5 | `PLANNED` | Implementar etapa analítica com Databricks |
-| 9 | `CDH-015` | 6 | `PLANNED` | Implementar infraestrutura, CI/CD e deploy |
+| 1 | `CDH-008` | 2 | `ACTIVE` | Documentar API com Swagger / OpenAPI |
+| 2 | `CDH-009` | 3 | `NEXT` | Implementar fluxo front-end de clientes |
+| 3 | `CDH-010` | 3 | `PLANNED` | Implementar fluxo front-end de propostas |
+| 4 | `CDH-011` | 3 | `PLANNED` | Implementar filtros e estados de navegação |
+| 5 | `CDH-012` | 4 | `PLANNED` | Definir e implementar autenticação e permissões |
+| 6 | `CDH-013` | 4 | `PLANNED` | Implementar dashboard e auditoria |
+| 7 | `CDH-014` | 5 | `PLANNED` | Implementar etapa analítica com Databricks |
+| 8 | `CDH-015` | 6 | `PLANNED` | Implementar infraestrutura, CI/CD e deploy |
 
 Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados somente quando se tornarem próximos, evitando especificação prematura.
 
 ## 5. Tarefa ativa
 
-### `CDH-007` — Seed fictício
+### `CDH-008` — Swagger / OpenAPI
 
-Objetivo: popular um banco exclusivo de demonstração com clientes e propostas coerentes, reproduzíveis e integralmente fictícios.
+Objetivo: disponibilizar documentação OpenAPI navegável para os endpoints que já existem.
 
 Entregas:
 
-- adicionar Faker com locale `pt_BR`;
-- criar comando explícito de seed;
-- gerar 500 clientes;
-- gerar 1.000 propostas distribuídas pelos últimos 12 meses;
-- usar o motor aprovado para manter score, renda, risco e status coerentes;
-- garantir os cinco cenários determinísticos definidos no contexto;
-- proteger a execução contra banco ou ambiente não autorizado.
+- configurar Swagger no Fastify;
+- documentar somente health, clientes e propostas;
+- reutilizar os contratos existentes sempre que a integração permitir;
+- fornecer exemplos integralmente fictícios.
 
 Critérios de aceite:
 
-- nenhum dado pessoal real;
-- execução reproduzível;
-- volumes e distribuição temporal confirmados;
-- cenários determinísticos consultáveis;
-- nenhuma exclusão ampla sem guarda explícita;
-- usuários não são simulados antes do módulo de autenticação;
+- documentação acessível em ambiente de desenvolvimento;
+- schemas e respostas alinhados aos contratos atuais;
+- nenhum endpoint novo;
 - `lint`, `typecheck`, `test` e `build` aprovados.
 
 Fora do escopo:
 
-- criar usuários, autenticação ou decisões manuais;
-- adicionar Swagger;
+- criar ou alterar regras de negócio;
 - implementar telas;
 - configurar deploy;
-- alterar regras de decisão.
+- adicionar autenticação.
 
-## 6. Próximas tarefas da Fase 2
+## 6. Próxima tarefa
 
-### `CDH-008` — Swagger / OpenAPI
+### `CDH-009` — Fluxo front-end de clientes
 
-- documentar apenas endpoints existentes;
-- manter exemplos fictícios;
-- não introduzir funcionalidades novas.
+- detalhar o fluxo somente após a conclusão da documentação da API;
+- consumir os contratos e endpoints de clientes já implementados;
+- não antecipar propostas, dashboard ou autenticação.
 
 ## 7. Entregas concluídas
 
@@ -97,13 +89,14 @@ Fora do escopo:
 | `CDH-004` | Regras objetivas de propostas | `docs: definir regras de decisão de propostas` | limites, precedência, fronteiras, histórico e evolução de juros aprovados |
 | `CDH-005` | Contratos e persistência de propostas | `feat(api): criar contratos e persistência de propostas` | 43 testes, contratos estritos, histórico coerente, model validado e gates aprovados |
 | `CDH-006` | Motor e endpoints de propostas | `feat(api): implementar fluxo automático de propostas (CDH-006)` | 75 testes, precedência completa, `Fastify.inject()`, gates e smoke test read-only no Atlas |
+| `CDH-007` | Seed fictício | `feat(api): criar seed fictício e seguro (CDH-007)` | 88 testes, 500 clientes, 1.000 propostas, cinco cenários, reexecução idempotente e validação real no Atlas |
 
 ## 8. Handoff atual
 
 - branch: `main`;
-- última tarefa concluída: `CDH-006`;
-- tarefa ativa: `CDH-007`;
-- próxima implementação: seed fictício de clientes e propostas;
+- última tarefa concluída: `CDH-007`;
+- tarefa ativa: `CDH-008`;
+- próxima implementação: documentação Swagger / OpenAPI dos endpoints existentes;
 - bloqueios: nenhum;
 - push: não realizado nesta entrega.
 

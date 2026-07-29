@@ -96,6 +96,7 @@ describe("ProposalModel", () => {
         { status: 1, createdAt: -1 },
         { riskLevel: 1, createdAt: -1 },
         { requestedAmount: 1 },
+        { seedKey: 1 },
       ]),
     );
   });
