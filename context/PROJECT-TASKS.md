@@ -33,9 +33,8 @@ As decisões de produto pertencem ao [`README.md`](./README.md). As decisões t�
 
 | Ordem | ID | Fase | Estado | Entrega |
 | --- | --- | --- | --- | --- |
-| 1 | `CDH-013` | 4 | `ACTIVE` | Implementar dashboard e auditoria |
-| 2 | `CDH-014` | 5 | `NEXT` | Implementar etapa analítica com Databricks |
-| 3 | `CDH-015` | 6 | `PLANNED` | Implementar infraestrutura, CI/CD e deploy |
+| 1 | `CDH-014` | 5 | `ACTIVE` | Implementar etapa analítica com Databricks |
+| 2 | `CDH-015` | 6 | `NEXT` | Implementar infraestrutura, CI/CD e deploy |
 
 Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados somente quando se tornarem próximos, evitando especificação prematura.
 
@@ -43,25 +42,22 @@ Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados 
 
 ## 5. Tarefa ativa
 
-### `CDH-013` — Dashboard e auditoria
-
-Objetivo: apresentar indicadores operacionais e tornar a trilha de ações autenticadas consultável.
+### `CDH-014` — Etapa analítica com Databricks
 
 Entregas:
-
-- definir indicadores úteis antes de escolher visualizações;
-- implementar agregações operacionais na API;
-- apresentar dashboard conforme o papel autenticado;
-- permitir consulta de auditoria das ações manuais;
-- adicionar gráficos somente quando melhorarem a leitura.
-
-## 6. Próxima tarefa
-
-### `CDH-014` — Etapa analítica com Databricks
 
 - definir o contrato de exportação do dataset fictício;
 - criar processamento analítico sem substituir o MongoDB operacional;
 - integrar resultados somente depois de existir uma saída reproduzível.
+
+## 6. Próxima tarefa
+
+### `CDH-015` — Infraestrutura, CI/CD e deploy
+
+- adicionar Docker somente para os serviços que realmente precisarem;
+- configurar validações automatizadas no GitHub;
+- preparar Vercel, Render e MongoDB Atlas conforme a arquitetura aprovada;
+- avaliar Terraform para os recursos suportados pelos provedores escolhidos.
 
 ## 7. Entregas concluídas
 
@@ -79,14 +75,15 @@ Entregas:
 | `CDH-010` | Fluxo front-end de propostas | `feat(web): implementar fluxo de propostas (CDH-010)` | 122 testes, criação, listagem, detalhe, histórico, paginação, dois idiomas, temas e integração read-only com o Atlas validados |
 | `CDH-011` | Filtros e estados de navegação | `feat(web): implementar filtros de propostas (CDH-011)` | 132 testes, parâmetros compartilhados, URL navegável, paginação preservada, estados vazios e inspeção real em dois idiomas e temas |
 | `CDH-012` | Autenticação e permissões | `feat(auth): implementar autenticação e permissões (CDH-012)` | 144 testes, JWT HttpOnly, scrypt, papéis, bootstrap, rotas protegidas, gestão de analistas e decisões manuais validados |
+| `CDH-013` | Dashboard e auditoria | `feat(dashboard): implementar indicadores e auditoria (CDH-013)` | 157 testes, agregações sobre 1.000 propostas no Atlas, visão por papel, auditoria paginada, contratos estritos e gates aprovados |
 | `CDH-016` | Design system e Storybook | `feat(ui): criar design system com Storybook (CDH-016)` | 127 testes, três componentes compartilhados, temas centralizados, catálogo estático e inspeção visual aprovados |
 
 ## 8. Handoff atual
 
 - branch: `main`;
-- última tarefa concluída: `CDH-012`;
-- tarefa ativa: `CDH-013`;
-- próxima implementação: definição dos indicadores e da auditoria;
+- última tarefa concluída: `CDH-013`;
+- tarefa ativa: `CDH-014`;
+- próxima implementação: definição do contrato de exportação analítica;
 - bloqueios: nenhum;
 - push: não realizado nesta entrega.
 

@@ -167,6 +167,10 @@ proposalModelSchema.index({ customerId: 1, createdAt: -1 });
 proposalModelSchema.index({ status: 1, createdAt: -1 });
 proposalModelSchema.index({ riskLevel: 1, createdAt: -1 });
 proposalModelSchema.index({ requestedAmount: 1 });
+proposalModelSchema.index({
+  "history.actorType": 1,
+  "history.createdAt": -1,
+});
 
 export type ProposalPersistence = InferSchemaType<typeof proposalModelSchema>;
 

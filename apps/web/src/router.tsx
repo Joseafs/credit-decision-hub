@@ -14,6 +14,8 @@ import { ProposalCreatePage } from "./pages/ProposalCreatePage";
 import { ProposalDetailsPage } from "./pages/ProposalDetailsPage";
 import { ProposalsPage } from "./pages/ProposalsPage";
 import { UsersPage } from "./pages/UsersPage";
+import { AuditPage } from "./pages/AuditPage";
+import { DashboardPage } from "./pages/DashboardPage";
 
 export const router = createBrowserRouter([
   {
@@ -41,6 +43,14 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <HomePage />,
+      },
+      {
+        path: "dashboard",
+        element: <DashboardPage />,
+      },
+      {
+        path: "audit",
+        element: <AuditPage />,
       },
       {
         path: "customers",

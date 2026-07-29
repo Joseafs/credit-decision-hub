@@ -34,16 +34,15 @@ Implementado:
 - biblioteca de componentes genéricos e catálogo Storybook;
 - filtros de propostas e paginação de listagens sincronizados com a URL;
 - autenticação, autorização por papel, gestão de analistas e decisões manuais;
+- dashboard operacional e consulta paginada da auditoria de decisões manuais;
 - temas claro e escuro e interface em PT-BR e inglês.
 
 Em execução:
 
-- dashboard e auditoria.
+- etapa analítica com Databricks.
 
 Não implementado:
 
-- dashboard;
-- Databricks;
 - infraestrutura e CI/CD.
 
 ## 3. Visão da arquitetura
@@ -163,7 +162,18 @@ Regras:
 - não usar `any`;
 - normalizar dados na entrada quando isso fizer parte do contrato;
 - nunca expor documentos Mongoose diretamente;
+- projetar explicitamente o objeto público antes de validá-lo com um schema
+  estrito;
+- nunca entregar ao schema de resposta objetos internos enriquecidos com
+  segredos, credenciais ou metadados de persistência;
 - respostas externas devem respeitar os contratos compartilhados.
+
+Schemas estritos protegem a fronteira externa ao rejeitar propriedades
+desconhecidas. Essa proteção não substitui a separação de tipos internos e
+públicos. Por exemplo, a consulta de autenticação retorna separadamente
+`user`, validado pelo contrato compartilhado, e `passwordHash`, usado somente
+na verificação da senha. O hash nunca é incorporado ao objeto enviado para a
+resposta.
 
 ## 7. Inicialização da API
 
@@ -586,6 +596,58 @@ Estados finais não podem ser alterados. Cada decisão exige justificativa, atua
 
 No front-end, a sessão usa Context API porque identidade e permissões são estados globais simples. Rotas privadas aguardam a restauração da sessão; usuários anônimos são enviados ao login e analistas não acessam a gestão de usuários.
 
+## 9.16 Dashboard e auditoria operacional
+
+O dashboard usa agregações de leitura sobre a collection de propostas e
+apresenta:
+
+- total de propostas;
+- soma dos valores solicitados;
+- taxa de aprovação sobre o total de propostas;
+- quantidade de propostas que exigem ação operacional;
+- quantidade de decisões manuais;
+- distribuições completas por status e risco, incluindo categorias com valor
+  zero.
+
+Pendências operacionais são propostas em `manual_review`,
+`fraud_suspected` ou `pending_documents`. Essa métrica representa trabalho que
+ainda exige acompanhamento e não altera o status das propostas.
+
+A visão de decisões manuais respeita o papel autenticado:
+
+- administradores visualizam o total de decisões manuais;
+- analistas visualizam a quantidade de decisões registradas por sua própria
+  identidade.
+
+A auditoria não possui uma segunda collection. Sua fonte é o histórico
+imutável já incorporado às propostas, filtrado por eventos cujo `actorType` é
+`analyst`. A consulta paginada projeta somente:
+
+- identificador do evento e da proposta;
+- identificador e nome do responsável;
+- status anterior e novo status;
+- código e descrição da justificativa;
+- data e hora.
+
+O nome do responsável é resolvido por agregação com a collection de usuários.
+Se o usuário não estiver mais disponível, o evento permanece consultável com
+uma identificação neutra. Administradores e analistas autenticados podem
+consultar a auditoria, pois os mesmos eventos já são visíveis no histórico das
+propostas.
+
+Endpoints:
+
+| Método | Rota | Comportamento |
+| --- | --- | --- |
+| `GET` | `/dashboard` | Retorna os indicadores operacionais e a visão do usuário autenticado |
+| `GET` | `/audit-events?page=1&limit=10` | Lista decisões manuais em ordem decrescente de ocorrência |
+
+Os contratos compartilhados definem indicadores, distribuições, eventos e
+paginação. A API projeta e valida a saída antes da resposta, e o front-end
+valida novamente o payload recebido. Nenhum gráfico foi adicionado: para a
+quantidade atual de categorias, números e listas oferecem leitura mais direta
+sem introduzir biblioteca de visualização.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -664,6 +726,10 @@ No front-end, a sessão usa Context API porque identidade e permissões são est
 | 2026-07-29 | Consultar o usuário ativo em cada requisição autenticada | Fazer desativação e remoção de acesso prevalecerem sobre um token ainda válido |
 | 2026-07-29 | Restringir gestão de usuários ao administrador | Criar uma diferença objetiva de autorização sem antecipar funções de dashboard |
 | 2026-07-29 | Registrar decisões manuais com identidade da sessão e atualização condicional | Preservar autoria, histórico e concorrência da decisão |
+| 2026-07-29 | Projetar objetos públicos antes da validação por schemas Zod estritos | Impedir que credenciais e metadados internos alcancem contratos de resposta |
+| 2026-07-29 | Derivar auditoria do histórico de propostas | Manter uma única fonte de verdade e evitar duplicação de eventos |
+| 2026-07-29 | Calcular indicadores operacionais por agregações de leitura no MongoDB | Evitar transferir coleções completas para a aplicação e manter métricas consistentes |
+| 2026-07-29 | Exibir distribuições sem biblioteca de gráficos nesta etapa | Preservar legibilidade e evitar dependência sem necessidade concreta |
 
 ## 13. Atualização deste documento
 

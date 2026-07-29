@@ -14,6 +14,12 @@ import {
   createCustomerService,
   type CustomerService,
 } from "./modules/customers/customer.service.js";
+import { dashboardRepository } from "./modules/dashboard/dashboard.repository.js";
+import { dashboardRoutes } from "./modules/dashboard/dashboard.routes.js";
+import {
+  createDashboardService,
+  type DashboardService,
+} from "./modules/dashboard/dashboard.service.js";
 import { proposalRepository } from "./modules/proposals/proposal.repository.js";
 import { proposalRoutes } from "./modules/proposals/proposal.routes.js";
 import {
@@ -34,6 +40,7 @@ import { registerOpenApi } from "./shared/openapi/openapi.js";
 
 type BuildAppOptions = FastifyServerOptions & {
   customerService?: CustomerService;
+  dashboardService?: DashboardService;
   proposalService?: ProposalService;
   authentication?: {
     secret: string;
@@ -44,6 +51,7 @@ type BuildAppOptions = FastifyServerOptions & {
 
 export const buildApp = ({
   customerService = createCustomerService(customerRepository),
+  dashboardService = createDashboardService(dashboardRepository),
   proposalService = createProposalService({
     customerReader: customerRepository,
     repository: proposalRepository,
@@ -81,6 +89,10 @@ export const buildApp = ({
         userService,
       });
       scope.register(userRoutes, { userService });
+      scope.register(dashboardRoutes, {
+        dashboardService,
+        protectedRoutes: true,
+      });
       scope.register(customerRoutes, {
         customerService,
         protectedRoutes: true,

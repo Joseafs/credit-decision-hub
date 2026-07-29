@@ -12,6 +12,16 @@ export {
 } from "./customer/index.js";
 export { healthResponseSchema, type HealthResponse } from "./health/index.js";
 export {
+  auditEventListResponseSchema,
+  auditEventSchema,
+  dashboardSummarySchema,
+  listAuditEventsQuerySchema,
+  type AuditEvent,
+  type AuditEventListResponse,
+  type DashboardSummary,
+  type ListAuditEventsQuery,
+} from "./dashboard/index.js";
+export {
   authSessionSchema,
   loginSchema,
   type AuthSession,
