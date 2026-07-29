@@ -4,8 +4,8 @@ import {
   listCustomersQuerySchema,
 } from "@credit-decision-hub/contracts";
 import type { FastifyPluginAsync } from "fastify";
-import type { ZodError } from "zod";
 
+import { toValidationErrorResponse } from "../../shared/http/validation-error.js";
 import {
   CustomerConflictError,
   CustomerNotFoundError,
@@ -16,14 +16,6 @@ type CustomerRoutesOptions = {
   customerService: CustomerService;
 };
 
-const toValidationError = (error: ZodError) => ({
-  message: "Dados inválidos",
-  issues: error.issues.map((issue) => ({
-    path: issue.path.join("."),
-    message: issue.message,
-  })),
-});
-
 export const customerRoutes: FastifyPluginAsync<CustomerRoutesOptions> = async (
   app,
   { customerService },
@@ -32,7 +24,7 @@ export const customerRoutes: FastifyPluginAsync<CustomerRoutesOptions> = async (
     const input = createCustomerSchema.safeParse(request.body);
 
     if (!input.success) {
-      return reply.status(400).send(toValidationError(input.error));
+      return reply.status(400).send(toValidationErrorResponse(input.error));
     }
 
     try {
@@ -52,7 +44,7 @@ export const customerRoutes: FastifyPluginAsync<CustomerRoutesOptions> = async (
     const query = listCustomersQuerySchema.safeParse(request.query);
 
     if (!query.success) {
-      return reply.status(400).send(toValidationError(query.error));
+      return reply.status(400).send(toValidationErrorResponse(query.error));
     }
 
     return reply.status(200).send(await customerService.list(query.data));
@@ -62,7 +54,7 @@ export const customerRoutes: FastifyPluginAsync<CustomerRoutesOptions> = async (
     const params = customerIdParamsSchema.safeParse(request.params);
 
     if (!params.success) {
-      return reply.status(400).send(toValidationError(params.error));
+      return reply.status(400).send(toValidationErrorResponse(params.error));
     }
 
     try {

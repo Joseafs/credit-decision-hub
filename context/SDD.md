@@ -25,20 +25,15 @@ Implementado:
 - contratos compartilhados de health e clientes;
 - conexão configurável com MongoDB Atlas;
 - criação, listagem paginada e consulta de clientes;
-- contratos compartilhados e persistência de propostas.
-
-Definido:
-
-- regras objetivas para classificação e decisão de propostas, ainda sem implementação.
+- contratos compartilhados e persistência de propostas;
+- motor de decisão, criação, listagem e consulta de propostas.
 
 Em execução:
 
-- motor de decisão, repository, service e endpoints de propostas.
+- seed fictício de clientes e propostas.
 
 Não implementado:
 
-- endpoints de propostas;
-- seed;
 - Swagger / OpenAPI;
 - telas de clientes e propostas;
 - autenticação;
@@ -358,6 +353,55 @@ O model Mongoose:
 
 O model não é exportado pelo pacote de contratos e documentos Mongoose não fazem parte das respostas da API. A conversão explícita será responsabilidade do repository.
 
+### 9.8 Motor de decisão e endpoints
+
+O motor de decisão está isolado em funções puras:
+
+- cálculo da parcela estimada;
+- cálculo do comprometimento de renda;
+- classificação do pior risco entre score e comprometimento;
+- aplicação sequencial da precedência aprovada;
+- associação entre código e descrição do motivo.
+
+Essas funções recebem apenas valores validados e não conhecem Fastify, Mongoose ou variáveis de ambiente.
+
+O service de propostas:
+
+- depende estruturalmente de um leitor de clientes e de um repository;
+- consulta a renda mensal do cliente;
+- rejeita clientes inexistentes;
+- executa a avaliação automática;
+- cria os eventos de histórico `pending` e decisão final;
+- delega a persistência;
+- monta e valida a paginação.
+
+O repository:
+
+- converte documentos e subdocumentos Mongoose para o contrato Zod;
+- nunca retorna `_id`, `__v` ou objetos Mongoose;
+- traduz filtros compartilhados para consultas;
+- ordena propostas mais recentes primeiro;
+- pagina dados e total em paralelo.
+
+Endpoints implementados:
+
+| Método | Rota | Comportamento |
+| --- | --- | --- |
+| `POST` | `/proposals` | Cria e avalia automaticamente uma proposta |
+| `GET` | `/proposals` | Lista com paginação e filtros compartilhados |
+| `GET` | `/proposals/:id` | Consulta proposta e histórico |
+
+Erros conhecidos:
+
+| Status | Situação |
+| --- | --- |
+| `400` | Corpo, query ou identificador inválido |
+| `404` | Cliente ou proposta não encontrado |
+
+A tradução de erros Zod para a resposta HTTP é compartilhada pelas rotas de clientes e propostas. Não existe controller separado porque as rotas apenas validam o contrato, delegam ao service e traduzem erros conhecidos.
+
+Decisões manuais, edição de propostas decididas e juros continuam fora deste fluxo.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -414,6 +458,9 @@ O model não é exportado pelo pacote de contratos e documentos Mongoose não fa
 | 2026-07-29 | Separar valores, histórico e schemas de propostas dentro do domínio de contratos | Melhorar leitura e coesão sem criar abstrações genéricas |
 | 2026-07-29 | Reutilizar no Mongoose os valores canônicos exportados pelos contratos | Impedir divergência entre enums de aplicação e persistência |
 | 2026-07-29 | Validar coerência entre a proposta e seu último evento no contrato de resposta | Evitar estado atual incompatível com a trilha de decisão |
+| 2026-07-29 | Manter o motor de decisão em funções puras | Testar cálculos, fronteiras e precedência sem infraestrutura |
+| 2026-07-29 | Fazer o service depender de interfaces estruturais mínimas | Aplicar inversão de dependência sem criar classes ou adapters genéricos |
+| 2026-07-29 | Compartilhar somente a tradução de erros Zod para HTTP | Remover duplicação real entre rotas sem centralizar comportamentos de domínio |
 
 ## 13. Atualização deste documento
 
