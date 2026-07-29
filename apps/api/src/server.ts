@@ -21,6 +21,7 @@ const startServer = async (): Promise<void> => {
   const app = buildApp({
     logger: true,
     analyticsService,
+    corsOrigin: environment.webOrigin,
     authentication: {
       secret: environment.authJwtSecret,
       secureCookie: environment.authSecureCookie,

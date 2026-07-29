@@ -14,6 +14,13 @@ type AuthRoutesOptions = {
   userService: UserService;
 };
 
+const getSessionCookieOptions = (secureCookie: boolean) => ({
+  httpOnly: true,
+  path: "/",
+  sameSite: secureCookie ? ("none" as const) : ("lax" as const),
+  secure: secureCookie,
+});
+
 export const authRoutes: FastifyPluginAsyncZod<AuthRoutesOptions> = async (
   app,
   { secureCookie, userService },
@@ -34,10 +41,7 @@ export const authRoutes: FastifyPluginAsyncZod<AuthRoutesOptions> = async (
         const user = await userService.authenticate(request.body);
         const token = await reply.jwtSign({ sub: user.id });
         reply.setCookie(SESSION_COOKIE_NAME, token, {
-          httpOnly: true,
-          sameSite: "lax",
-          secure: secureCookie,
-          path: "/",
+          ...getSessionCookieOptions(secureCookie),
           maxAge: 8 * 60 * 60,
         });
         return reply.status(200).send({ user });
@@ -75,7 +79,10 @@ export const authRoutes: FastifyPluginAsyncZod<AuthRoutesOptions> = async (
       },
     },
     async (_request, reply) => {
-      reply.clearCookie(SESSION_COOKIE_NAME, { path: "/" });
+      reply.clearCookie(
+        SESSION_COOKIE_NAME,
+        getSessionCookieOptions(secureCookie),
+      );
       return reply.status(204).send();
     },
   );

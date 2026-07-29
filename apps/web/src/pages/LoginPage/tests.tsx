@@ -69,7 +69,7 @@ describe("LoginPage", () => {
       "/api/auth/login",
       expect.objectContaining({
         method: "POST",
-        credentials: "same-origin",
+        credentials: "include",
       }),
     );
   });

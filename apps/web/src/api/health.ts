@@ -3,8 +3,11 @@ import {
   type HealthResponse,
 } from "@credit-decision-hub/contracts";
 
+import { resolveApiUrl } from "./api-url";
+
 export const getHealth = async (): Promise<HealthResponse> => {
-  const response = await fetch("/api/health", {
+  const response = await fetch(resolveApiUrl("/api/health"), {
+    credentials: "include",
     headers: {
       Accept: "application/json",
     },

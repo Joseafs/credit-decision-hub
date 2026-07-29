@@ -5,6 +5,7 @@ import {
   type LoginInput,
 } from "@credit-decision-hub/contracts";
 
+import { resolveApiUrl } from "./api-url";
 import { requestJson } from "./http";
 
 export const login = (input: LoginInput): Promise<AuthSession> =>
@@ -22,9 +23,9 @@ export const getSession = (signal?: AbortSignal): Promise<AuthSession> =>
   );
 
 export const logout = async (): Promise<void> => {
-  const response = await fetch("/api/auth/logout", {
+  const response = await fetch(resolveApiUrl("/api/auth/logout"), {
     method: "POST",
-    credentials: "same-origin",
+    credentials: "include",
   });
   if (!response.ok) throw new Error("Logout failed");
 };

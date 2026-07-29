@@ -24,6 +24,7 @@ describe("readEnvironment", () => {
       mongodbDatabase: "credit-test",
       mongodbUri: "mongodb+srv://user:password@example.mongodb.net/",
       port: 4000,
+      webOrigin: null,
     });
   });
 
@@ -36,6 +37,29 @@ describe("readEnvironment", () => {
     expect(environment.mongodbDatabase).toBe("credit-decision-hub");
     expect(environment.dnsServers).toEqual([]);
     expect(environment.port).toBe(3333);
+    expect(environment.webOrigin).toBeNull();
+  });
+
+  test("should parse an exact web origin for credentialed CORS", () => {
+    const environment = readEnvironment({
+      ...authEnvironment,
+      MONGODB_URI: "mongodb://localhost:27017",
+      WEB_ORIGIN: "https://credit-decision-hub.vercel.app/",
+    });
+
+    expect(environment.webOrigin).toBe(
+      "https://credit-decision-hub.vercel.app",
+    );
+  });
+
+  test("should reject a web origin containing a path", () => {
+    expect(() =>
+      readEnvironment({
+        ...authEnvironment,
+        MONGODB_URI: "mongodb://localhost:27017",
+        WEB_ORIGIN: "https://credit-decision-hub.vercel.app/app",
+      }),
+    ).toThrow("WEB_ORIGIN deve conter somente protocolo e host");
   });
 
   test("should reject an invalid MongoDB URI", () => {

@@ -548,21 +548,37 @@ API no Render:
 ```env
 MONGODB_URI=<configurar como segredo no Render>
 MONGODB_DATABASE=credit-decision-hub
+AUTH_JWT_SECRET=<configurar como segredo no Render>
+AUTH_SECURE_COOKIE=true
+WEB_ORIGIN=https://credit-decision-hub.vercel.app
+DATABRICKS_HOST=https://<workspace>.cloud.databricks.com
+DATABRICKS_WAREHOUSE_ID=<configurar no Render>
+DATABRICKS_TOKEN=<configurar como segredo no Render>
 ```
 
 Regras:
 
 - `MONGODB_URI` nunca deve ser enviada ao front-end ou versionada;
+- `AUTH_JWT_SECRET` e `DATABRICKS_TOKEN` são segredos exclusivos da API;
+- `WEB_ORIGIN` deve conter exatamente a origem pública da Vercel, sem caminho,
+  e nunca deve ser substituída por `*` quando cookies estiverem habilitados;
+- `AUTH_SECURE_COOKIE=true` habilita o cookie `SameSite=None` e `Secure`,
+  necessário para a comunicação HTTPS entre os domínios inicialmente previstos;
 - `PORT` será fornecida pelo Render e a API continuará lendo essa variável;
 - `MONGODB_DNS_SERVERS` permanece opcional e só deve ser configurada se o ambiente exigir;
 - novas variáveis só devem ser adicionadas quando a implementação correspondente existir.
 
 ### 14.4 Pré-requisitos para o deploy futuro
 
-Antes de configurar os serviços, será necessário:
+Já atendidos pelo código:
 
 - fazer o front-end consumir `VITE_API_URL` em produção;
-- configurar CORS na API com a origem efetiva da Vercel;
+- configurar CORS com credenciais para uma única `WEB_ORIGIN`;
+- manter `SameSite=Lax` no desenvolvimento e usar `SameSite=None` com `Secure`
+  somente no ambiente hospedado.
+
+Antes de configurar os serviços, ainda será necessário:
+
 - definir diretórios raiz, comandos de build e start para cada aplicação do monorepo;
 - usar `GET /health` como health check da API;
 - configurar no Atlas somente os intervalos de saída informados pelo serviço Render;

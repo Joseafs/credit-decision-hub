@@ -38,6 +38,8 @@ Implementado:
 - contrato e exportação local reproduzível das propostas para NDJSON analítico;
 - processamento PySpark e tabelas Delta analíticas no Databricks;
 - consumo protegido dos KPIs do Databricks pela API e pelo dashboard;
+- comunicação autenticada configurável entre web e API hospedadas em origens
+  diferentes;
 - temas claro e escuro e interface em PT-BR e inglês.
 
 Em execução:
@@ -812,6 +814,45 @@ confirmou o dataset `v1` com 1.000 propostas, 200 aprovadas, taxa de 20%, valor
 total solicitado de 70.816.365,76, valor médio de 70.816,37 e comprometimento
 médio de 11,09%.
 
+## 9.19 Comunicação entre Vercel e Render
+
+A primeira subetapa da `CDH-015` prepara a aplicação para a hospedagem separada
+já aprovada, sem criar recursos nos provedores:
+
+```mermaid
+flowchart LR
+  Browser["Browser<br/>origem Vercel"] -->|"fetch credentials: include"| Api["API Render"]
+  Api -->|"Access-Control-Allow-Origin<br/>origem exata"| Browser
+  Api -->|"cookie HttpOnly<br/>SameSite=None; Secure"| Browser
+```
+
+No desenvolvimento, os módulos do front-end continuam chamando `/api/*` e o
+proxy do Vite remove esse prefixo. Em produção, `VITE_API_URL` é validada como
+uma origem HTTP completa, sem caminho, query ou fragmento. Um único resolvedor
+remove `/api` e combina a rota com a origem do Render, evitando lógica de
+ambiente duplicada em cada módulo.
+
+Todas as requisições usam `credentials: "include"`. A API registra
+`@fastify/cors` somente quando `WEB_ORIGIN` está configurada e responde com essa
+origem exata e `Access-Control-Allow-Credentials: true`; não é permitido usar
+origem curinga com cookies.
+
+O cookie de sessão mantém `SameSite=Lax` e `Secure=false` no desenvolvimento
+local. Quando `AUTH_SECURE_COOKIE=true`, a API usa `SameSite=None` e
+`Secure=true`, combinação exigida para o cenário HTTPS entre Vercel e Render.
+Login e logout reutilizam as mesmas opções, mantendo a remoção do cookie
+coerente.
+
+Alguns navegadores podem bloquear cookies de terceiros mesmo com CORS,
+`SameSite=None` e `Secure`. A validação real nos provedores deve incluir os
+navegadores-alvo. Se o bloqueio ocorrer, a alternativa preferencial será um
+proxy `/api` same-origin na Vercel, preservando os contratos e endpoints atuais,
+em vez de expor o JWT ao JavaScript.
+
+Docker não foi adicionado: Render executa Node.js nativamente e Vercel publica o
+build estático do Vite. Nesta arquitetura, um container aumentaria a superfície
+de manutenção sem resolver uma necessidade de execução.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -902,6 +943,10 @@ médio de 11,09%.
 | 2026-07-29 | Consultar a tabela Gold pela Statement Execution API somente no back-end | Preservar a API como fronteira pública e manter credenciais fora do navegador |
 | 2026-07-29 | Validar o resumo analítico com um contrato Zod compartilhado e versionado | Converter a resposta tabular uma única vez e impedir divergência entre API e front-end |
 | 2026-07-29 | Isolar o estado analítico do dashboard operacional | Manter os dados do MongoDB disponíveis quando o warehouse estiver iniciando ou indisponível |
+| 2026-07-29 | Resolver a URL da API em uma única fronteira do front-end | Preservar o proxy local e habilitar a origem pública sem duplicar condicionais nos módulos |
+| 2026-07-29 | Restringir CORS a uma `WEB_ORIGIN` exata com credenciais | Permitir a sessão entre Vercel e Render sem abrir a API para origens arbitrárias |
+| 2026-07-29 | Usar `SameSite=None` e `Secure` somente no ambiente hospedado | Compatibilizar o cookie HttpOnly com HTTPS cross-site sem enfraquecer o fluxo local |
+| 2026-07-29 | Não adicionar Docker à arquitetura atual de hospedagem | Vercel e Render atendem os runtimes nativamente e um container não resolve uma necessidade concreta |
 
 ## 13. Atualização deste documento
 

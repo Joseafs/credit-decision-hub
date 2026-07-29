@@ -5,6 +5,8 @@ import {
 } from "@credit-decision-hub/contracts";
 import type { z } from "zod";
 
+import { resolveApiUrl } from "./api-url";
+
 export class ApiRequestError extends Error {
   constructor(
     readonly status: number,
@@ -37,12 +39,12 @@ const parseError = async (response: Response): Promise<ApiRequestError> => {
 };
 
 export const requestJson = async <Output>(
-  path: string,
+  path: `/api/${string}`,
   schema: z.ZodType<Output>,
   init?: RequestInit,
 ): Promise<Output> => {
-  const response = await fetch(path, {
-    credentials: "same-origin",
+  const response = await fetch(resolveApiUrl(path), {
+    credentials: "include",
     ...init,
     headers: {
       Accept: "application/json",

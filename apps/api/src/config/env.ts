@@ -19,6 +19,14 @@ const dnsServersSchema = z
     "MONGODB_DNS_SERVERS deve conter endereços IP válidos",
   );
 
+const webOriginSchema = z
+  .url()
+  .refine((value) => {
+    const url = new URL(value);
+    return url.pathname === "/" && url.search === "" && url.hash === "";
+  }, "WEB_ORIGIN deve conter somente protocolo e host")
+  .transform((value) => new URL(value).origin);
+
 const environmentSchema = z
   .object({
     PORT: z.coerce.number().int().min(1).max(65_535).default(3333),
@@ -37,6 +45,7 @@ const environmentSchema = z
       .enum(["true", "false"])
       .default("false")
       .transform((value) => value === "true"),
+    WEB_ORIGIN: webOriginSchema.optional(),
     DATABRICKS_HOST: z.url().optional(),
     DATABRICKS_TOKEN: z.string().trim().min(1).optional(),
     DATABRICKS_WAREHOUSE_ID: z.string().trim().min(1).optional(),
@@ -74,6 +83,7 @@ const environmentSchema = z
       MONGODB_DNS_SERVERS,
       MONGODB_URI,
       PORT,
+      WEB_ORIGIN,
     }) => ({
       authJwtSecret: AUTH_JWT_SECRET,
       authSecureCookie: AUTH_SECURE_COOKIE,
@@ -89,6 +99,7 @@ const environmentSchema = z
       port: PORT,
       mongodbDatabase: MONGODB_DATABASE,
       mongodbUri: MONGODB_URI,
+      webOrigin: WEB_ORIGIN ?? null,
     }),
   );
 

@@ -1,3 +1,4 @@
+import cors from "@fastify/cors";
 import Fastify, {
   type FastifyInstance,
   type FastifyServerOptions,
@@ -45,6 +46,7 @@ import { registerOpenApi } from "./shared/openapi/openapi.js";
 
 type BuildAppOptions = FastifyServerOptions & {
   analyticsService?: AnalyticsService;
+  corsOrigin?: string | null;
   customerService?: CustomerService;
   dashboardService?: DashboardService;
   proposalService?: ProposalService;
@@ -57,6 +59,7 @@ type BuildAppOptions = FastifyServerOptions & {
 
 export const buildApp = ({
   analyticsService = unavailableAnalyticsService,
+  corsOrigin = null,
   customerService = createCustomerService(customerRepository),
   dashboardService = createDashboardService(dashboardRepository),
   proposalService = createProposalService({
@@ -79,6 +82,13 @@ export const buildApp = ({
 
     return reply.send(error);
   });
+
+  if (corsOrigin) {
+    app.register(cors, {
+      credentials: true,
+      origin: corsOrigin,
+    });
+  }
 
   registerOpenApi(app);
   app.register(healthRoute);

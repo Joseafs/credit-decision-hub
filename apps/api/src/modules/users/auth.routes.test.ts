@@ -73,6 +73,29 @@ describe("authentication routes", () => {
     expect(response.json().user.role).toBe("analyst");
   });
 
+  test("should use a secure cross-site cookie in the hosted environment", async () => {
+    const hostedApp = buildApp({
+      authentication: {
+        secret: "test-secret-with-at-least-32-characters",
+        secureCookie: true,
+        userService,
+      },
+    });
+    const response = await hostedApp.inject({
+      method: "POST",
+      url: "/auth/login",
+      payload: {
+        email: "analyst@example.test",
+        password: "demo-password",
+      },
+    });
+    await hostedApp.close();
+
+    expect(response.cookies[0]?.httpOnly).toBe(true);
+    expect(response.cookies[0]?.sameSite).toBe("None");
+    expect(response.cookies[0]?.secure).toBe(true);
+  });
+
   test("should return unauthorized for invalid credentials", async () => {
     vi.mocked(userService.authenticate).mockRejectedValueOnce(
       new InvalidCredentialsError(),

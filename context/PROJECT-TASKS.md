@@ -122,10 +122,28 @@ Validação da terceira subetapa:
 
 ### `CDH-015` — Infraestrutura, CI/CD e deploy
 
-- adicionar Docker somente para os serviços que realmente precisarem;
-- configurar validações automatizadas no GitHub;
-- preparar Vercel, Render e MongoDB Atlas conforme a arquitetura aprovada;
-- avaliar Terraform para os recursos suportados pelos provedores escolhidos.
+Entregas:
+
+- [x] preparar URL pública, CORS restrito e cookie seguro para a comunicação
+  entre Vercel e Render;
+- [ ] configurar validações automatizadas no GitHub;
+- [ ] preparar Vercel, Render e MongoDB Atlas conforme a arquitetura aprovada;
+- [ ] validar os deploys e o estado de inicialização da demonstração;
+- [ ] avaliar Terraform para os recursos suportados pelos provedores escolhidos.
+
+Evidência da primeira subetapa:
+
+- `VITE_API_URL` validada e resolvida em uma única fronteira do front-end;
+- desenvolvimento preservado pelo proxy `/api` do Vite;
+- requisições autenticadas usando `credentials: "include"`;
+- `WEB_ORIGIN` validada como origem exata e CORS com credenciais;
+- cookie local `SameSite=Lax` e cookie hospedado `SameSite=None; Secure`;
+- Docker avaliado e dispensado por não existir necessidade no runtime nativo
+  da Vercel ou do Render;
+- 102 testes da API e 46 testes do front-end aprovados na validação focada;
+- `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm typecheck`, 186 testes e
+  `pnpm build` com `VITE_API_URL` de produção aprovados;
+- origem pública confirmada no bundle estático gerado pelo Vite.
 
 ## 7. Entregas concluídas
 
@@ -152,10 +170,9 @@ Validação da terceira subetapa:
 - branch: `main`;
 - última tarefa concluída: `CDH-014`;
 - tarefa ativa: `CDH-015`;
-- subetapas concluídas: contrato, exportação NDJSON, upload manual,
-  processamento PySpark, tabelas Delta e consumo protegido no dashboard;
-- próxima implementação: detalhar o menor escopo seguro de infraestrutura,
-  CI/CD e deploy antes de alterar provedores externos;
+- subetapa concluída: prontidão cross-origin entre web e API;
+- próxima implementação: automatizar `lint`, `typecheck`, `test` e `build` no
+  GitHub Actions sem adicionar etapas de deploy;
 - bloqueios: nenhum;
 - push: não realizado nesta entrega.
 
