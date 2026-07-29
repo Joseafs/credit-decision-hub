@@ -28,11 +28,13 @@ Implementado:
 - contratos compartilhados e persistência de propostas;
 - motor de decisão, criação, listagem e consulta de propostas;
 - seed fictício de clientes e propostas;
-- documentação OpenAPI navegável.
+- documentação OpenAPI navegável;
+- fluxo front-end de criação, listagem paginada e consulta de clientes;
+- temas claro e escuro e interface em PT-BR e inglês.
 
 Em execução:
 
-- fluxo front-end de clientes.
+- fluxo front-end de propostas.
 
 Não implementado:
 
@@ -462,6 +464,33 @@ Respostas de sucesso e erros conhecidos são declarados nas próprias rotas. Exe
 
 O plugin OpenAPI é registrado antes das rotas, condição necessária para descobri-las. Rotas sem tag são ocultadas da especificação para impedir que endpoints internos do Swagger UI sejam apresentados como operações de negócio.
 
+## 9.11 Front-end de clientes e preferências visuais
+
+O fluxo de clientes possui rotas próprias para listagem paginada, cadastro e detalhes. As chamadas HTTP permanecem em `src/api`, fora das páginas e componentes visuais.
+
+As respostas são validadas no front-end pelos mesmos schemas Zod publicados em `packages/contracts`. O formulário usa Formik para estado e interação, enquanto o schema compartilhado de criação:
+
+- valida os campos;
+- normaliza valores textuais e e-mail;
+- transforma a representação textual da renda em número antes da requisição;
+- define o tipo enviado à API sem duplicar o contrato.
+
+Erros HTTP conhecidos são convertidos em um erro de aplicação tipado. A interface diferencia carregamento, lista vazia, falha de consulta, conflito no cadastro e confirmação de sucesso.
+
+Durante o desenvolvimento, chamadas HTTP usam o prefixo `/api`. O proxy do Vite remove somente esse prefixo antes de encaminhar a requisição para a API. Rotas de interface como `/customers/new` não compartilham mais o namespace do proxy, permitindo acesso direto e recarregamento pelo React Router.
+
+As preferências globais são limitadas a tema e idioma e usam Context API:
+
+- PT-BR é o idioma padrão;
+- inglês pode ser selecionado sem recarregar a página;
+- o tema inicial respeita a preferência salva ou o esquema de cores do sistema;
+- idioma e tema são persistidos no `localStorage`;
+- a moeda do domínio permanece BRL em ambos os idiomas.
+
+Os catálogos de tradução são objetos TypeScript com as mesmas chaves. Uma tradução ausente falha no `typecheck`, sem exigir uma biblioteca de internacionalização nesta etapa.
+
+A paleta não é codificada diretamente nos componentes. `index.css` define tokens semânticos do Tailwind para canvas, superfícies, textos, bordas, cor primária e feedbacks. Cada tema fornece somente os valores desses tokens. Assim, uma mudança futura de paleta fica concentrada no tema e não exige alterar as classes de cada componente.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -525,6 +554,9 @@ O plugin OpenAPI é registrado antes das rotas, condição necessária para desc
 | 2026-07-29 | Marcar e substituir o seed em transação com autorização explícita | Permitir reexecução segura sem excluir dados externos à carga |
 | 2026-07-29 | Usar schemas Zod nas rotas como fonte da validação, tipagem e OpenAPI | Evitar contratos JSON duplicados e manter documentação alinhada ao comportamento |
 | 2026-07-29 | Documentar somente rotas explicitamente marcadas por domínio | Não expor endpoints internos do Swagger UI como operações da aplicação |
+| 2026-07-29 | Usar tokens semânticos do Tailwind para temas claro e escuro | Permitir mudar a paleta em um único ponto sem acoplar componentes a cores concretas |
+| 2026-07-29 | Manter catálogos PT-BR e inglês tipados sem biblioteca adicional | Garantir consistência das traduções com uma solução proporcional ao escopo atual |
+| 2026-07-29 | Reservar `/api` para o proxy HTTP do front-end em desenvolvimento | Evitar colisão entre endpoints da API e acessos diretos às rotas do React Router |
 
 ## 13. Atualização deste documento
 

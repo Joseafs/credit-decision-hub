@@ -1,9 +1,11 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
+import { renderWithProviders } from "../../test/render";
 import { HomePage } from ".";
 
-const componentRender = () => render(<HomePage />);
+const componentRender = () =>
+  renderWithProviders([{ path: "/", element: <HomePage /> }], ["/"]);
 
 const createHealthResponse = (): Response =>
   new Response(
@@ -36,7 +38,7 @@ describe("HomePage", () => {
 
     componentRender();
 
-    expect(screen.getByText("Consultando a API...")).toBeInTheDocument();
+    expect(screen.getByText("Conectando com a API...")).toBeInTheDocument();
 
     await act(async () => {
       resolveRequest(createHealthResponse());
@@ -73,9 +75,7 @@ describe("HomePage", () => {
     componentRender();
 
     await screen.findByText("Não foi possível acessar a API");
-    fireEvent.click(
-      screen.getByRole("button", { name: "Verificar novamente" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
 
     expect(
       await screen.findByText("Front-end e API conectados"),

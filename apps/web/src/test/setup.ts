@@ -4,4 +4,7 @@ import { afterEach } from "vitest";
 
 afterEach(() => {
   cleanup();
+  window.localStorage.clear();
+  delete document.documentElement.dataset.theme;
+  document.documentElement.lang = "";
 });

@@ -1,7 +1,26 @@
 @import "tailwindcss";
 
+@theme inline {
+  --color-canvas: var(--app-canvas);
+  --color-surface: var(--app-surface);
+  --color-surface-subtle: var(--app-surface-subtle);
+  --color-heading: var(--app-heading);
+  --color-body: var(--app-body);
+  --color-muted: var(--app-muted);
+  --color-border: var(--app-border);
+  --color-primary: var(--app-primary);
+  --color-primary-hover: var(--app-primary-hover);
+  --color-primary-soft: var(--app-primary-soft);
+  --color-on-primary: var(--app-on-primary);
+  --color-success: var(--app-success);
+  --color-success-soft: var(--app-success-soft);
+  --color-danger: var(--app-danger);
+  --color-danger-soft: var(--app-danger-soft);
+  --color-warning: var(--app-warning);
+  --color-warning-soft: var(--app-warning-soft);
+}
+
 :root {
-  color-scheme: dark;
   font-family:
     Inter,
     ui-sans-serif,
@@ -14,13 +33,67 @@
   text-rendering: optimizeLegibility;
 }
 
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --app-canvas: #f5f7fb;
+  --app-surface: #ffffff;
+  --app-surface-subtle: #eef2f7;
+  --app-heading: #172033;
+  --app-body: #344054;
+  --app-muted: #667085;
+  --app-border: #dce3ed;
+  --app-primary: #2563eb;
+  --app-primary-hover: #1d4ed8;
+  --app-primary-soft: #dbeafe;
+  --app-on-primary: #ffffff;
+  --app-success: #047857;
+  --app-success-soft: #d1fae5;
+  --app-danger: #be123c;
+  --app-danger-soft: #ffe4e6;
+  --app-warning: #a16207;
+  --app-warning-soft: #fef3c7;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --app-canvas: #0b1120;
+  --app-surface: #111a2e;
+  --app-surface-subtle: #18233b;
+  --app-heading: #f8fafc;
+  --app-body: #cbd5e1;
+  --app-muted: #94a3b8;
+  --app-border: #26344f;
+  --app-primary: #60a5fa;
+  --app-primary-hover: #93c5fd;
+  --app-primary-soft: #172b4d;
+  --app-on-primary: #07111f;
+  --app-success: #34d399;
+  --app-success-soft: #123c35;
+  --app-danger: #fb7185;
+  --app-danger-soft: #4c1d2a;
+  --app-warning: #fbbf24;
+  --app-warning-soft: #422f16;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: var(--app-canvas);
 }
 
 button,
 input {
   font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--app-primary) 45%, transparent);
+  outline-offset: 2px;
 }

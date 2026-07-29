@@ -7,8 +7,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/health": {
+      "/api": {
         target: "http://localhost:3333",
+        rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
   },
