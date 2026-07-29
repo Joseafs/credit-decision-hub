@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "analytics:check": "tsx src/analytics/check-databricks.ts",
     "analytics:export": "tsx src/analytics/export-proposals.ts",
     "build": "tsc -p tsconfig.build.json",
     "bootstrap:admin": "tsx src/database/bootstrap-admin.ts",

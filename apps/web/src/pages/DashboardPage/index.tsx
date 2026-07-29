@@ -1,9 +1,12 @@
-import type { DashboardSummary } from "@credit-decision-hub/contracts";
+import type {
+  AnalyticsSummary,
+  DashboardSummary,
+} from "@credit-decision-hub/contracts";
 import { FeedbackState } from "@credit-decision-hub/ui";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { getDashboardSummary } from "../../api/dashboard";
+import { getAnalyticsSummary, getDashboardSummary } from "../../api/dashboard";
 import { useAppPreferences } from "../../contexts/AppPreferencesContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { formatCurrency, formatPercent } from "../../i18n/formatters";
@@ -17,10 +20,18 @@ type DashboardState =
   | { status: "success"; summary: DashboardSummary }
   | { status: "error" };
 
+type AnalyticsState =
+  | { status: "loading" }
+  | { status: "success"; summary: AnalyticsSummary }
+  | { status: "error" };
+
 export const DashboardPage = () => {
   const { locale, translate } = useAppPreferences();
   const { user } = useAuth();
   const [state, setState] = useState<DashboardState>({ status: "loading" });
+  const [analyticsState, setAnalyticsState] = useState<AnalyticsState>({
+    status: "loading",
+  });
 
   const loadSummary = useCallback(async (signal?: AbortSignal) => {
     setState({ status: "loading" });
@@ -36,11 +47,31 @@ export const DashboardPage = () => {
     }
   }, []);
 
+  const loadAnalytics = useCallback(async (signal?: AbortSignal) => {
+    setAnalyticsState({ status: "loading" });
+
+    try {
+      setAnalyticsState({
+        status: "success",
+        summary: await getAnalyticsSummary(signal),
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setAnalyticsState({ status: "error" });
+    }
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
     void loadSummary(controller.signal);
     return () => controller.abort();
   }, [loadSummary]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadAnalytics(controller.signal);
+    return () => controller.abort();
+  }, [loadAnalytics]);
 
   if (state.status === "loading") {
     return <FeedbackState title={translate("dashboard.loading")} />;
@@ -172,6 +203,84 @@ export const DashboardPage = () => {
           </ul>
         </section>
       </div>
+
+      <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
+          {translate("dashboard.analytics.eyebrow")}
+        </p>
+        <h2 className="mt-2 text-xl font-semibold text-heading">
+          {translate("dashboard.analytics.title")}
+        </h2>
+        <p className="mt-2 text-sm text-muted">
+          {translate("dashboard.analytics.description")}
+        </p>
+
+        {analyticsState.status === "loading" && (
+          <p className="mt-5 text-sm text-muted">
+            {translate("dashboard.analytics.loading")}
+          </p>
+        )}
+
+        {analyticsState.status === "error" && (
+          <div className="mt-5">
+            <p className="text-sm text-danger">
+              {translate("dashboard.analytics.error")}
+            </p>
+            <button
+              className="mt-3 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-heading hover:border-primary"
+              onClick={() => void loadAnalytics()}
+              type="button"
+            >
+              {translate("dashboard.analytics.retry")}
+            </button>
+          </div>
+        )}
+
+        {analyticsState.status === "success" && (
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <article>
+              <p className="text-sm text-muted">
+                {translate("dashboard.analytics.processed")}
+              </p>
+              <strong className="mt-2 block text-xl text-heading">
+                {analyticsState.summary.totalProposals}
+              </strong>
+            </article>
+            <article>
+              <p className="text-sm text-muted">
+                {translate("dashboard.analytics.averageAmount")}
+              </p>
+              <strong className="mt-2 block text-xl text-heading">
+                {formatCurrency(
+                  analyticsState.summary.averageRequestedAmount,
+                  locale,
+                )}
+              </strong>
+            </article>
+            <article>
+              <p className="text-sm text-muted">
+                {translate("dashboard.analytics.averageCommitment")}
+              </p>
+              <strong className="mt-2 block text-xl text-heading">
+                {analyticsState.summary.averageIncomeCommitment === null
+                  ? translate("common.notAvailable")
+                  : formatPercent(
+                      analyticsState.summary.averageIncomeCommitment,
+                      locale,
+                    )}
+              </strong>
+            </article>
+            <article>
+              <p className="text-sm text-muted">
+                {translate("dashboard.analytics.datasetVersion")}
+              </p>
+              <strong className="mt-2 block text-xl text-heading">
+                v{analyticsState.summary.datasetVersion}
+              </strong>
+            </article>
+          </div>
+        )}
+      </section>
     </section>
   );
 };

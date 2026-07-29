@@ -63,6 +63,18 @@ export const ptBRTranslations = {
   "dashboard.byStatus": "Distribuição por status",
   "dashboard.byRisk": "Distribuição por risco",
   "dashboard.viewAudit": "Consultar auditoria",
+  "dashboard.analytics.eyebrow": "Camada analítica",
+  "dashboard.analytics.title": "Resultados processados no Databricks",
+  "dashboard.analytics.description":
+    "Fotografia manual do dataset fictício processada nas camadas Bronze, Silver e Gold.",
+  "dashboard.analytics.loading": "Consultando o Databricks...",
+  "dashboard.analytics.error":
+    "Os indicadores analíticos estão temporariamente indisponíveis.",
+  "dashboard.analytics.retry": "Tentar novamente",
+  "dashboard.analytics.processed": "Propostas processadas",
+  "dashboard.analytics.averageAmount": "Ticket médio",
+  "dashboard.analytics.averageCommitment": "Comprometimento médio",
+  "dashboard.analytics.datasetVersion": "Versão do dataset",
   "audit.eyebrow": "Rastreabilidade",
   "audit.title": "Auditoria de decisões",
   "audit.description":
@@ -330,6 +342,18 @@ export const enTranslations = {
   "dashboard.byStatus": "Distribution by status",
   "dashboard.byRisk": "Distribution by risk",
   "dashboard.viewAudit": "View audit",
+  "dashboard.analytics.eyebrow": "Analytics layer",
+  "dashboard.analytics.title": "Results processed in Databricks",
+  "dashboard.analytics.description":
+    "Manual snapshot of the fictional dataset processed through Bronze, Silver, and Gold layers.",
+  "dashboard.analytics.loading": "Querying Databricks...",
+  "dashboard.analytics.error":
+    "Analytical indicators are temporarily unavailable.",
+  "dashboard.analytics.retry": "Try again",
+  "dashboard.analytics.processed": "Processed proposals",
+  "dashboard.analytics.averageAmount": "Average requested amount",
+  "dashboard.analytics.averageCommitment": "Average income commitment",
+  "dashboard.analytics.datasetVersion": "Dataset version",
   "audit.eyebrow": "Traceability",
   "audit.title": "Decision audit",
   "audit.description":

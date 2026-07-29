@@ -33,14 +33,13 @@ As decisões de produto pertencem ao [`README.md`](./README.md). As decisões t�
 
 | Ordem | ID | Fase | Estado | Entrega |
 | --- | --- | --- | --- | --- |
-| 1 | `CDH-014` | 5 | `ACTIVE` | Implementar etapa analítica com Databricks |
-| 2 | `CDH-015` | 6 | `NEXT` | Implementar infraestrutura, CI/CD e deploy |
+| 1 | `CDH-015` | 6 | `ACTIVE` | Implementar infraestrutura, CI/CD e deploy |
 
 Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados somente quando se tornarem próximos, evitando especificação prematura.
 
 `CDH-016` foi priorizada e concluída por solicitação explícita para estabelecer o design system durante a Fase 3. A ordem e os identificadores das tarefas já planejadas foram preservados.
 
-## 5. Tarefa ativa
+## 5. Última tarefa concluída
 
 ### `CDH-014` — Etapa analítica com Databricks
 
@@ -52,7 +51,7 @@ Entregas:
 - [x] enviar manualmente o NDJSON ao volume `workspace.credit_decision_hub.analytics_raw`;
 - [x] criar o processamento PySpark e as tabelas Delta;
 - [x] gerar KPIs, distribuições e evolução mensal;
-- [ ] integrar resultados analíticos somente depois de definir o contrato de consumo pela aplicação.
+- [x] integrar resultados analíticos somente depois de definir o contrato de consumo pela aplicação.
 
 Evidência da primeira subetapa:
 
@@ -99,7 +98,27 @@ Validação da segunda subetapa:
 - execução completa confirmada no Databricks Serverless;
 - nenhuma credencial, output do notebook ou dado analítico versionado.
 
-## 6. Próxima tarefa
+Evidência da terceira subetapa:
+
+- contrato `analyticsSummarySchema` compartilhado entre API e front-end;
+- endpoint autenticado `GET /analytics/summary`;
+- consulta somente de leitura à tabela Gold pela Statement Execution API;
+- token restrito ao ambiente da API e configuração validada como conjunto;
+- estados independentes para dashboard operacional e seção analítica;
+- smoke test real com 1.000 propostas, 200 aprovadas, taxa de 20%, valor total
+  de 70.816.365,76, valor médio de 70.816,37 e comprometimento médio de 11,09%;
+- `pnpm analytics:check` reproduz a validação sem iniciar servidor ou imprimir
+  credenciais.
+
+Validação da terceira subetapa:
+
+- contratos: 33 testes aprovados;
+- API: 98 testes aprovados;
+- web: 43 testes aprovados;
+- pacote de UI: 5 testes aprovados;
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` e `pnpm build` aprovados.
+
+## 6. Tarefa ativa
 
 ### `CDH-015` — Infraestrutura, CI/CD e deploy
 
@@ -125,17 +144,18 @@ Validação da segunda subetapa:
 | `CDH-011` | Filtros e estados de navegação | `feat(web): implementar filtros de propostas (CDH-011)` | 132 testes, parâmetros compartilhados, URL navegável, paginação preservada, estados vazios e inspeção real em dois idiomas e temas |
 | `CDH-012` | Autenticação e permissões | `feat(auth): implementar autenticação e permissões (CDH-012)` | 144 testes, JWT HttpOnly, scrypt, papéis, bootstrap, rotas protegidas, gestão de analistas e decisões manuais validados |
 | `CDH-013` | Dashboard e auditoria | `feat(dashboard): implementar indicadores e auditoria (CDH-013)` | 157 testes, agregações sobre 1.000 propostas no Atlas, visão por papel, auditoria paginada, contratos estritos e gates aprovados |
+| `CDH-014` | Etapa analítica com Databricks | `feat(analytics): integrar resultados ao dashboard (CDH-014)` | exportação reproduzível, notebook PySpark, tabelas Delta, endpoint protegido, 179 testes e smoke test real aprovados |
 | `CDH-016` | Design system e Storybook | `feat(ui): criar design system com Storybook (CDH-016)` | 127 testes, três componentes compartilhados, temas centralizados, catálogo estático e inspeção visual aprovados |
 
 ## 8. Handoff atual
 
 - branch: `main`;
-- última tarefa concluída: `CDH-013`;
-- tarefa ativa: `CDH-014`;
+- última tarefa concluída: `CDH-014`;
+- tarefa ativa: `CDH-015`;
 - subetapas concluídas: contrato, exportação NDJSON, upload manual,
-  processamento PySpark e tabelas Delta analíticas;
-- próxima implementação: definir o contrato de consumo dos resultados
-  analíticos antes de alterar API ou dashboard;
+  processamento PySpark, tabelas Delta e consumo protegido no dashboard;
+- próxima implementação: detalhar o menor escopo seguro de infraestrutura,
+  CI/CD e deploy antes de alterar provedores externos;
 - bloqueios: nenhum;
 - push: não realizado nesta entrega.
 

@@ -4,12 +4,23 @@ import {
   connectToDatabase,
   disconnectFromDatabase,
 } from "./database/mongodb.js";
+import { createDatabricksAnalyticsRepository } from "./modules/analytics/analytics.repository.js";
+import {
+  createAnalyticsService,
+  unavailableAnalyticsService,
+} from "./modules/analytics/analytics.service.js";
 
 const startServer = async (): Promise<void> => {
   loadEnvironmentFiles();
   const environment = readEnvironment();
+  const analyticsService = environment.databricks
+    ? createAnalyticsService(
+        createDatabricksAnalyticsRepository(environment.databricks),
+      )
+    : unavailableAnalyticsService;
   const app = buildApp({
     logger: true,
+    analyticsService,
     authentication: {
       secret: environment.authJwtSecret,
       secureCookie: environment.authSecureCookie,

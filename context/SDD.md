@@ -37,15 +37,16 @@ Implementado:
 - dashboard operacional e consulta paginada da auditoria de decisões manuais;
 - contrato e exportação local reproduzível das propostas para NDJSON analítico;
 - processamento PySpark e tabelas Delta analíticas no Databricks;
+- consumo protegido dos KPIs do Databricks pela API e pelo dashboard;
 - temas claro e escuro e interface em PT-BR e inglês.
 
 Em execução:
 
-- definição da integração dos resultados analíticos com a aplicação.
+- infraestrutura, CI/CD e deploy.
 
 Não implementado:
 
-- infraestrutura e CI/CD.
+- automação da carga analítica e atualização incremental das tabelas.
 
 ## 3. Visão da arquitetura
 
@@ -60,14 +61,16 @@ flowchart LR
   Ui --> Storybook["apps/storybook<br/>catálogo visual"]
   Mongo -. "exportação local NDJSON" .-> Artifact["artifacts/analytics"]
   Artifact -. "upload manual" .-> Databricks["Databricks<br/>Unity Catalog + Volume"]
+  Databricks -->|"Statement Execution API"| Api
 ```
 
 O front-end acessa dados apenas pela API. O pacote de contratos é reutilizado pelos dois lados e não conhece detalhes de interface, Fastify, Mongoose ou banco de dados.
 
-O fluxo analítico é deliberadamente desacoplado do tráfego HTTP. O MongoDB
+A carga analítica é deliberadamente desacoplada do tráfego HTTP. O MongoDB
 continua como banco operacional; o arquivo NDJSON é uma fotografia reproduzível
-para processamento posterior e não cria sincronização direta entre a API e o
-Databricks.
+e não cria sincronização direta entre as bases. Depois do processamento, a API
+consulta somente a tabela Gold de KPIs pelo SQL Warehouse. O navegador nunca
+acessa o Databricks ou suas credenciais diretamente.
 
 ## 4. Organização do monorepo
 
@@ -753,9 +756,61 @@ O processamento evita `cache()` e `persist()`, indisponíveis no compute
 Serverless usado pela Free Edition. Para a carga atual de 1.000 propostas, a
 releitura é proporcional e dispensa materialização intermediária.
 
-O notebook foi executado com sucesso no Serverless após essa adequação. Ele não
-altera o dashboard atual; a integração dos resultados analíticos permanece como
-próxima subetapa da `CDH-014`.
+O notebook foi executado com sucesso no Serverless após essa adequação.
+
+## 9.18 Consumo dos indicadores do Databricks
+
+O consumo da camada Gold preserva a API como única fronteira pública:
+
+```mermaid
+flowchart LR
+  Gold["analytics_proposal_kpis<br/>Delta Gold"] --> Statement["Databricks<br/>Statement Execution API"]
+  Statement --> Repository["AnalyticsRepository"]
+  Repository --> Service["AnalyticsService"]
+  Service --> Route["GET /analytics/summary"]
+  Contract["analyticsSummarySchema<br/>Zod v1"] --> Repository
+  Contract --> Route
+  Route --> Web["Dashboard React"]
+```
+
+O endpoint `GET /analytics/summary` exige a mesma sessão autenticada das demais
+rotas de negócio. O repository executa uma consulta somente de leitura na tabela
+`workspace.credit_decision_hub.analytics_proposal_kpis` e usa `INLINE` com
+`JSON_ARRAY`, formato proporcional ao único registro retornado. A implementação
+usa o `fetch` nativo do Node.js e não adiciona um SDK para uma única operação
+HTTP.
+
+O contrato compartilhado `analyticsSummarySchema`:
+
+- identifica a origem como `databricks` e a versão do dataset como `1`;
+- tipa totais, aprovação, valores e comprometimento médio;
+- garante limites numéricos e impede aprovadas acima do total;
+- é aplicado tanto ao resultado convertido pela API quanto ao payload recebido
+  pelo front-end.
+
+A resposta tabular do Databricks representa valores numéricos como texto. Essa
+forma externa é validada e convertida somente no repository; service, rota e
+front-end trabalham com o tipo `AnalyticsSummary` inferido do Zod, sem duplicar
+interfaces manuais.
+
+As variáveis `DATABRICKS_HOST`, `DATABRICKS_WAREHOUSE_ID` e
+`DATABRICKS_TOKEN` são opcionais como conjunto: ou todas estão presentes, ou a
+configuração é rejeitada. O token fica exclusivamente no ambiente da API. Para
+a POC local foi usado um PAT com escopo mínimo `sql`; uma futura implantação
+contínua deverá preferir OAuth máquina a máquina, sem antecipar essa
+configuração nesta fase.
+
+O dashboard mantém estados independentes para os indicadores operacionais do
+MongoDB e para os indicadores analíticos. Uma cota excedida, um warehouse em
+inicialização ou uma indisponibilidade do Databricks resulta em `503` somente na
+seção analítica, com opção de tentar novamente, sem ocultar o restante do
+dashboard.
+
+O comando `pnpm analytics:check` valida a configuração e executa a mesma consulta
+do repository sem iniciar servidor nem imprimir credenciais. O smoke test real
+confirmou o dataset `v1` com 1.000 propostas, 200 aprovadas, taxa de 20%, valor
+total solicitado de 70.816.365,76, valor médio de 70.816,37 e comprometimento
+médio de 11,09%.
 
 ## 10. Estratégia de testes
 
@@ -844,6 +899,9 @@ próxima subetapa da `CDH-014`.
 | 2026-07-29 | Versionar o processamento como notebook Python source-format | Manter código revisável no Git sem armazenar outputs do workspace |
 | 2026-07-29 | Materializar Bronze, Silver e Gold como tabelas Delta gerenciadas no mesmo schema | Usar governança do Unity Catalog com uma estrutura proporcional à POC |
 | 2026-07-29 | Sobrescrever somente as tabelas analíticas da POC a cada execução | Tornar o processamento manual idempotente sem introduzir controle incremental prematuro |
+| 2026-07-29 | Consultar a tabela Gold pela Statement Execution API somente no back-end | Preservar a API como fronteira pública e manter credenciais fora do navegador |
+| 2026-07-29 | Validar o resumo analítico com um contrato Zod compartilhado e versionado | Converter a resposta tabular uma única vez e impedir divergência entre API e front-end |
+| 2026-07-29 | Isolar o estado analítico do dashboard operacional | Manter os dados do MongoDB disponíveis quando o warehouse estiver iniciando ou indisponível |
 
 ## 13. Atualização deste documento
 

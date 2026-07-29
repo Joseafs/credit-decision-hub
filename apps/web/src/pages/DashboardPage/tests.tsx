@@ -40,6 +40,16 @@ const summary = {
     { riskLevel: "high", count: 2 },
   ],
 };
+const analyticsSummary = {
+  source: "databricks",
+  datasetVersion: "1",
+  totalProposals: 1_000,
+  approvedProposals: 200,
+  approvalRate: 20,
+  totalRequestedAmount: 70_816_365.76,
+  averageRequestedAmount: 70_816.37,
+  averageIncomeCommitment: 11.09,
+};
 
 const componentRender = () => {
   const routes: RouteObject[] = [
@@ -64,7 +74,11 @@ describe("DashboardPage", () => {
     fetchMock.mockReset();
     fetchMock.mockImplementation(async (input) => {
       const path = String(input);
-      const payload = path.includes("/auth/session") ? { user } : summary;
+      const payload = path.includes("/auth/session")
+        ? { user }
+        : path.includes("/analytics/summary")
+          ? analyticsSummary
+          : summary;
 
       return new Response(JSON.stringify(payload), {
         status: 200,
@@ -84,5 +98,38 @@ describe("DashboardPage", () => {
     expect(
       screen.getByRole("link", { name: "Consultar auditoria" }),
     ).toHaveAttribute("href", "/audit");
+    expect(
+      await screen.findByText("Resultados processados no Databricks"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("R$ 70.816,37")).toBeInTheDocument();
+    expect(screen.getByText("11,09%")).toBeInTheDocument();
+    expect(screen.getByText("v1")).toBeInTheDocument();
+  });
+
+  test("should preserve the operational dashboard when analytics is unavailable", async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const path = String(input);
+
+      if (path.includes("/analytics/summary")) {
+        return Response.json(
+          { message: "Indicadores analíticos temporariamente indisponíveis" },
+          { status: 503 },
+        );
+      }
+
+      return Response.json(path.includes("/auth/session") ? { user } : summary);
+    });
+
+    componentRender();
+
+    expect(await screen.findByText("R$ 250.000,00")).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "Os indicadores analíticos estão temporariamente indisponíveis.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Tentar novamente" }),
+    ).toBeInTheDocument();
   });
 });

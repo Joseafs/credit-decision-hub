@@ -19,6 +19,7 @@ describe("readEnvironment", () => {
     expect(environment).toEqual({
       authJwtSecret: authEnvironment.AUTH_JWT_SECRET,
       authSecureCookie: false,
+      databricks: null,
       dnsServers: ["8.8.8.8", "8.8.4.4"],
       mongodbDatabase: "credit-test",
       mongodbUri: "mongodb+srv://user:password@example.mongodb.net/",
@@ -54,5 +55,33 @@ describe("readEnvironment", () => {
         MONGODB_DNS_SERVERS: "invalid-server",
       }),
     ).toThrow("MONGODB_DNS_SERVERS deve conter endereços IP válidos");
+  });
+
+  test("should parse a complete Databricks configuration", () => {
+    const environment = readEnvironment({
+      ...authEnvironment,
+      MONGODB_URI: "mongodb://localhost:27017",
+      DATABRICKS_HOST: "https://example.cloud.databricks.com/",
+      DATABRICKS_TOKEN: "local-token",
+      DATABRICKS_WAREHOUSE_ID: "warehouse-id",
+    });
+
+    expect(environment.databricks).toEqual({
+      host: "https://example.cloud.databricks.com",
+      token: "local-token",
+      warehouseId: "warehouse-id",
+    });
+  });
+
+  test("should reject a partial Databricks configuration", () => {
+    expect(() =>
+      readEnvironment({
+        ...authEnvironment,
+        MONGODB_URI: "mongodb://localhost:27017",
+        DATABRICKS_HOST: "https://example.cloud.databricks.com",
+      }),
+    ).toThrow(
+      "DATABRICKS_HOST, DATABRICKS_TOKEN e DATABRICKS_WAREHOUSE_ID devem ser configurados juntos",
+    );
   });
 });

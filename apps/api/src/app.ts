@@ -8,6 +8,11 @@ import {
   validatorCompiler,
 } from "fastify-type-provider-zod";
 
+import { analyticsRoutes } from "./modules/analytics/analytics.routes.js";
+import {
+  type AnalyticsService,
+  unavailableAnalyticsService,
+} from "./modules/analytics/analytics.service.js";
 import { customerRepository } from "./modules/customers/customer.repository.js";
 import { customerRoutes } from "./modules/customers/customer.routes.js";
 import {
@@ -39,6 +44,7 @@ import { toValidationErrorResponse } from "./shared/http/validation-error.js";
 import { registerOpenApi } from "./shared/openapi/openapi.js";
 
 type BuildAppOptions = FastifyServerOptions & {
+  analyticsService?: AnalyticsService;
   customerService?: CustomerService;
   dashboardService?: DashboardService;
   proposalService?: ProposalService;
@@ -50,6 +56,7 @@ type BuildAppOptions = FastifyServerOptions & {
 };
 
 export const buildApp = ({
+  analyticsService = unavailableAnalyticsService,
   customerService = createCustomerService(customerRepository),
   dashboardService = createDashboardService(dashboardRepository),
   proposalService = createProposalService({
@@ -91,6 +98,10 @@ export const buildApp = ({
       scope.register(userRoutes, { userService });
       scope.register(dashboardRoutes, {
         dashboardService,
+        protectedRoutes: true,
+      });
+      scope.register(analyticsRoutes, {
+        analyticsService,
         protectedRoutes: true,
       });
       scope.register(customerRoutes, {

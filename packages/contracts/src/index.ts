@@ -30,8 +30,10 @@ export {
 export {
   analyticsProposalExportVersionSchema,
   analyticsProposalSchema,
+  analyticsSummarySchema,
   type AnalyticsProposal,
   type AnalyticsProposalExportVersion,
+  type AnalyticsSummary,
 } from "./analytics/index.js";
 export {
   apiErrorResponseSchema,

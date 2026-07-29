@@ -1,7 +1,9 @@
 import {
+  analyticsSummarySchema,
   auditEventListResponseSchema,
   dashboardSummarySchema,
   listAuditEventsQuerySchema,
+  type AnalyticsSummary,
   type AuditEventListResponse,
   type DashboardSummary,
   type ListAuditEventsQuery,
@@ -17,6 +19,15 @@ export const getDashboardSummary = (
   requestJson(
     "/api/dashboard",
     dashboardSummarySchema,
+    signal ? { signal } : undefined,
+  );
+
+export const getAnalyticsSummary = (
+  signal?: AbortSignal,
+): Promise<AnalyticsSummary> =>
+  requestJson(
+    "/api/analytics/summary",
+    analyticsSummarySchema,
     signal ? { signal } : undefined,
   );
 
