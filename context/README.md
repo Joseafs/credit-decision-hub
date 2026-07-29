@@ -279,6 +279,8 @@ Estas regras são apenas uma simulação didática:
 - decisões manuais devem registrar o usuário responsável;
 - nenhuma regra deve ser tratada como modelo financeiro real.
 
+Os critérios objetivos, a precedência e os casos de fronteira aprovados estão registrados na seção de propostas do [`SDD.md`](./SDD.md).
+
 Não alterar regras do domínio silenciosamente.
 
 ## 8. População inicial

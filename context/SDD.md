@@ -26,9 +26,13 @@ Implementado:
 - conexão configurável com MongoDB Atlas;
 - criação, listagem paginada e consulta de clientes.
 
-Em definição:
+Definido:
 
-- regras objetivas para classificação e decisão de propostas.
+- regras objetivas para classificação e decisão de propostas, ainda sem implementação.
+
+Em execução:
+
+- contratos compartilhados e persistência de propostas.
 
 Não implementado:
 
@@ -197,21 +201,124 @@ Erros inesperados são delegados ao tratamento padrão do Fastify. Um contrato g
 
 ## 9. Módulo de propostas
 
-O domínio inicial, os status e os níveis de risco estão definidos no `README.md`, mas as regras ainda são qualitativas.
+As regras abaixo foram aprovadas em 29 de julho de 2026. São exclusivamente didáticas e não representam política real de crédito.
 
-Antes da implementação, devem ser decididos e aprovados:
+### 9.1 Dados da avaliação
 
-- limites objetivos de score;
-- limite aceitável de comprometimento de renda;
-- critério de valor elevado;
-- condições que levam à análise manual;
-- condições determinísticas de documentação pendente;
-- inconsistências que representam suspeita de fraude;
-- precedência quando mais de uma condição for verdadeira;
-- transições de status permitidas;
-- conteúdo mínimo do histórico de decisão.
+A criação de uma proposta recebe:
 
-Nenhum valor deve ser inventado durante a implementação. A tarefa ativa no router conduz essa definição.
+- cliente;
+- valor solicitado, maior que zero;
+- quantidade de parcelas, entre `1` e `60`;
+- score fictício, entre `0` e `1000`;
+- indicador de documentação completa;
+- lista de indícios de fraude.
+
+Os indícios aceitos inicialmente são:
+
+- `document_mismatch`;
+- `identity_mismatch`;
+- `duplicate_application`.
+
+O front-end não informa o comprometimento de renda. A API o calcula usando a renda mensal persistida do cliente, evitando divergência entre um valor informado e os dados usados na decisão.
+
+### 9.2 Parcela e comprometimento
+
+Nesta fase, a parcela é uma estimativa didática sem juros:
+
+```txt
+parcela estimada = valor solicitado / quantidade de parcelas
+comprometimento (%) = parcela estimada / renda mensal * 100
+```
+
+A parcela e o percentual são arredondados para duas casas decimais. O percentual arredondado é usado na classificação.
+
+Quando a renda mensal for zero:
+
+- a parcela estimada ainda pode ser calculada;
+- o comprometimento será `null`, porque a divisão não possui resultado representável;
+- o risco será `high`;
+- a proposta será reprovada com o motivo de renda indisponível.
+
+Quantidade de parcelas e valor solicitado são imutáveis após a decisão automática. Uma alteração futura deve criar uma nova simulação ou reavaliação e gerar histórico; não deve sobrescrever silenciosamente a decisão original.
+
+Taxa de juros, CET e sistemas de amortização não fazem parte da Fase 2. A fórmula deve ficar em uma função pura e testável para permitir evolução posterior. A inclusão de juros exigirá uma nova decisão de domínio, pois altera parcela, comprometimento, risco e resultado.
+
+### 9.3 Classificação de risco
+
+Risco por score:
+
+| Score | Risco |
+| ---: | --- |
+| `700` a `1000` | `low` |
+| `500` a `699` | `medium` |
+| `0` a `499` | `high` |
+
+Risco por comprometimento:
+
+| Comprometimento | Risco |
+| ---: | --- |
+| até `30%` | `low` |
+| acima de `30%` até `40%` | `medium` |
+| acima de `40%` | `high` |
+| indisponível por renda zero | `high` |
+
+O risco final é sempre o pior nível encontrado entre score e comprometimento. O valor solicitado não muda o risco; ele pode mudar o fluxo operacional para análise manual.
+
+### 9.4 Precedência da decisão
+
+As condições são avaliadas nesta ordem e a primeira correspondência define o resultado:
+
+| Ordem | Condição | Status | Motivo |
+| ---: | --- | --- | --- |
+| 1 | Existe ao menos um indício de fraude | `fraud_suspected` | `fraud_signal_detected` |
+| 2 | Documentação está incompleta | `pending_documents` | `documents_incomplete` |
+| 3 | Renda mensal é zero | `rejected` | `income_unavailable` |
+| 4 | Risco final é alto | `rejected` | `high_risk` |
+| 5 | Valor solicitado é maior que R$ 100.000,00 | `manual_review` | `high_amount` |
+| 6 | Risco final é médio | `manual_review` | `medium_risk` |
+| 7 | Risco final é baixo | `approved` | `eligible` |
+
+R$ 100.000,00 exatos não são considerados valor elevado. Indício de fraude prevalece sobre documentação incompleta e todas as regras de risco.
+
+### 9.5 Ciclo de status e histórico
+
+Toda proposta inicia logicamente como `pending`. A avaliação automática registra a criação e a transição para o status calculado.
+
+Conteúdo mínimo de cada evento de histórico:
+
+- identificador;
+- status anterior, nulo somente no evento de criação;
+- novo status;
+- código do motivo;
+- descrição legível;
+- tipo do responsável: `system` ou `analyst`;
+- identificador do responsável, obrigatório para `analyst`;
+- data e hora.
+
+Transições previstas:
+
+- `pending` pode ir para qualquer resultado da avaliação automática;
+- `pending_documents` pode voltar para `pending` após atualização documental e nova avaliação;
+- `manual_review` pode ir para `approved` ou `rejected`;
+- `fraud_suspected` pode ir para `manual_review` ou `rejected`;
+- `approved` e `rejected` são estados finais.
+
+Na Fase 2 será implementada somente a decisão automática inicial. Transições manuais dependem de um usuário autenticado e ficam para a fase de autenticação e permissões. Isso impede aceitar uma identidade de analista não verificada apenas para antecipar funcionalidade.
+
+### 9.6 Exemplos e fronteiras
+
+| Cenário | Resultado |
+| --- | --- |
+| Score `700`, comprometimento `30%` e R$ 100.000,00 | `approved` |
+| Score `699` e comprometimento `30%` | `manual_review` |
+| Score `700` e comprometimento `30,01%` | `manual_review` |
+| Score `500` e comprometimento `40%` | `manual_review` |
+| Score `499` ou comprometimento `40,01%` | `rejected` |
+| Baixo risco e R$ 100.000,01 | `manual_review` |
+| Documentação incompleta e alto risco | `pending_documents` |
+| Fraude e documentação incompleta | `fraud_suspected` |
+| Renda mensal zero, sem fraude e com documentos completos | `rejected` |
 
 ## 10. Estratégia de testes
 
@@ -263,6 +370,9 @@ Nenhum valor deve ser inventado durante a implementação. A tarefa ativa no rou
 | 2026-07-29 | Usar injeção estrutural do repository no service | Aplicar inversão de dependência e facilitar testes |
 | 2026-07-29 | Manter segredos em arquivos locais ignorados | Evitar exposição de credenciais |
 | 2026-07-29 | Manter decisões, desenho e execução em três documentos canônicos | Evitar mistura entre produto, arquitetura e estado operacional |
+| 2026-07-29 | Adotar regras determinísticas e didáticas para propostas | Permitir implementação testável sem representar um motor financeiro real |
+| 2026-07-29 | Calcular comprometimento na API com parcela sem juros nesta fase | Manter uma única fonte para o cálculo e postergar complexidade financeira não especificada |
+| 2026-07-29 | Adiar transições manuais até existir identidade autenticada | Preservar a responsabilidade e a integridade do histórico |
 
 ## 13. Atualização deste documento
 

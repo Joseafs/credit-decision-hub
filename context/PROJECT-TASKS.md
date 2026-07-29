@@ -33,73 +33,61 @@ As decisões de produto pertencem ao [`README.md`](./README.md). As decisões t�
 
 | Ordem | ID | Fase | Estado | Entrega |
 | --- | --- | --- | --- | --- |
-| 1 | `CDH-004` | 2 | `ACTIVE` | Definir regras objetivas de decisão de propostas |
-| 2 | `CDH-005` | 2 | `NEXT` | Criar contratos e persistência de propostas |
-| 3 | `CDH-006` | 2 | `PLANNED` | Implementar regras, endpoints e histórico de propostas |
-| 4 | `CDH-007` | 2 | `PLANNED` | Criar seed de dados fictícios |
-| 5 | `CDH-008` | 2 | `PLANNED` | Documentar API com Swagger / OpenAPI |
-| 6 | `CDH-009` | 3 | `PLANNED` | Implementar fluxo front-end de clientes |
-| 7 | `CDH-010` | 3 | `PLANNED` | Implementar fluxo front-end de propostas |
-| 8 | `CDH-011` | 3 | `PLANNED` | Implementar filtros e estados de navegação |
-| 9 | `CDH-012` | 4 | `PLANNED` | Definir e implementar autenticação e permissões |
-| 10 | `CDH-013` | 4 | `PLANNED` | Implementar dashboard e auditoria |
-| 11 | `CDH-014` | 5 | `PLANNED` | Implementar etapa analítica com Databricks |
-| 12 | `CDH-015` | 6 | `PLANNED` | Implementar infraestrutura, CI/CD e deploy |
+| 1 | `CDH-005` | 2 | `ACTIVE` | Criar contratos e persistência de propostas |
+| 2 | `CDH-006` | 2 | `NEXT` | Implementar regras, endpoints e histórico de propostas |
+| 3 | `CDH-007` | 2 | `PLANNED` | Criar seed de dados fictícios |
+| 4 | `CDH-008` | 2 | `PLANNED` | Documentar API com Swagger / OpenAPI |
+| 5 | `CDH-009` | 3 | `PLANNED` | Implementar fluxo front-end de clientes |
+| 6 | `CDH-010` | 3 | `PLANNED` | Implementar fluxo front-end de propostas |
+| 7 | `CDH-011` | 3 | `PLANNED` | Implementar filtros e estados de navegação |
+| 8 | `CDH-012` | 4 | `PLANNED` | Definir e implementar autenticação e permissões |
+| 9 | `CDH-013` | 4 | `PLANNED` | Implementar dashboard e auditoria |
+| 10 | `CDH-014` | 5 | `PLANNED` | Implementar etapa analítica com Databricks |
+| 11 | `CDH-015` | 6 | `PLANNED` | Implementar infraestrutura, CI/CD e deploy |
 
 Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados somente quando se tornarem próximos, evitando especificação prematura.
 
 ## 5. Tarefa ativa
 
-### `CDH-004` — Definir regras objetivas de decisão de propostas
+### `CDH-005` — Contratos e persistência de propostas
 
-Objetivo: transformar as regras qualitativas do domínio em uma especificação determinística, compreensível e testável antes de escrever código.
+Objetivo: representar as regras aprovadas em contratos Zod compartilhados e no modelo de persistência, sem implementar ainda o motor de decisão ou endpoints.
 
-Decisões necessárias:
+Entregas:
 
-- faixas de score fictício;
-- limite de comprometimento de renda;
-- definição de valor elevado;
-- condições de `manual_review`;
-- condições de `pending_documents`;
-- condições de `fraud_suspected`;
-- precedência entre regras;
-- transições de status permitidas;
-- dados obrigatórios no histórico;
-- comportamento de decisão manual.
+- schemas e tipos de proposta, status, risco, indícios de fraude e histórico;
+- entrada de criação sem campos calculados;
+- resposta completa com campos calculados e histórico;
+- parâmetros de consulta e paginação;
+- model Mongoose com índices necessários;
+- testes dos contratos e da definição de persistência.
 
 Critérios de aceite:
 
-- regras documentadas com exemplos de entrada e saída;
-- valores explicitamente fictícios e inadequados para concessão real;
-- cenários de fronteira definidos;
-- precedência sem ambiguidades;
-- transições e histórico especificados;
-- aprovação do responsável pelo projeto antes da implementação;
-- SDD e router atualizados com a decisão.
+- tipos inferidos exclusivamente com `z.infer`;
+- front-end e API podem importar os mesmos contratos;
+- comprometimento, risco, status, motivo e histórico não são aceitos como entrada de criação;
+- persistência representa os estados e o histórico definidos no SDD;
+- nenhuma resposta expõe documento Mongoose;
+- testes cobrem valores válidos, limites e rejeições relevantes;
+- `lint`, `typecheck`, `test` e `build` aprovados.
 
 Fora do escopo:
 
-- criar schemas ou código de propostas;
-- alterar o banco;
-- implementar telas;
-- adicionar Swagger, seed ou autenticação.
-
-Dependência atual: decisão do responsável pelo projeto sobre os critérios funcionais. Valores não serão presumidos silenciosamente.
+- implementar cálculo de comprometimento ou classificação de risco;
+- criar service, repository ou endpoints;
+- executar decisões automáticas ou manuais;
+- criar seed, Swagger, telas ou autenticação;
+- adicionar taxa de juros.
 
 ## 6. Próximas tarefas da Fase 2
-
-### `CDH-005` — Contratos e persistência de propostas
-
-- criar schemas e tipos compartilhados;
-- modelar proposta e histórico no Mongoose;
-- preservar as regras aprovadas em `CDH-004`;
-- testar contratos e fronteira de persistência.
 
 ### `CDH-006` — Regras, endpoints e histórico de propostas
 
 - implementar service e repository;
-- expor criação, listagem, detalhe e transições definidas;
-- registrar histórico em toda mudança de status;
+- expor criação, listagem e detalhe;
+- implementar decisão automática e seu histórico;
+- preservar transições manuais para a fase de autenticação;
 - testar regras e rotas com `Fastify.inject()`.
 
 ### `CDH-007` — Seed fictício
@@ -122,14 +110,16 @@ Dependência atual: decisão do responsável pelo projeto sobre os critérios fu
 | `CDH-001` | Fundação do monorepo | `723929e` | `lint`, `typecheck`, `test`, `build` e execução conjunta pelo Turborepo |
 | `CDH-002` | Conexão com MongoDB Atlas | `eeaae88` | configuração validada, testes automatizados e conexão real confirmada |
 | `CDH-003` | Módulo de clientes | `25a797d` | contratos, service, repository, rotas, 28 testes e smoke test de listagem no Atlas |
+| `CDH-004` | Regras objetivas de propostas | `docs: definir regras de decisão de propostas` | limites, precedência, fronteiras, histórico e evolução de juros aprovados |
 
 ## 8. Handoff atual
 
 - branch: `main`;
-- última tarefa concluída: `CDH-003`;
-- tarefa ativa: `CDH-004`;
-- próxima implementação: bloqueada até a aprovação das regras de propostas;
-- push: não realizado nesta sequência de trabalho.
+- última tarefa concluída: `CDH-004`;
+- tarefa ativa: `CDH-005`;
+- próxima implementação: contratos compartilhados e modelo Mongoose de propostas;
+- bloqueios: nenhum;
+- push: não realizado nesta entrega.
 
 Ao encerrar uma tarefa, registrar:
 
