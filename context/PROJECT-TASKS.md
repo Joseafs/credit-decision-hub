@@ -49,9 +49,10 @@ Entregas:
 - [x] definir o contrato versionado de exportação do dataset fictício;
 - [x] criar o comando local, reproduzível e validado de exportação em NDJSON;
 - [x] confirmar duas exportações reais e idênticas das 1.000 propostas do Atlas;
-- [ ] enviar manualmente o NDJSON ao volume `workspace.credit_decision_hub.analytics_raw`;
-- [ ] criar o processamento PySpark e as tabelas Delta;
-- integrar resultados somente depois de existir uma saída reproduzível.
+- [x] enviar manualmente o NDJSON ao volume `workspace.credit_decision_hub.analytics_raw`;
+- [x] criar o processamento PySpark e as tabelas Delta;
+- [x] gerar KPIs, distribuições e evolução mensal;
+- [ ] integrar resultados analíticos somente depois de definir o contrato de consumo pela aplicação.
 
 Evidência da primeira subetapa:
 
@@ -77,6 +78,26 @@ Testes adicionados:
 - sete casos do exportador: NDJSON e contagem, conteúdo reproduzível, ordenação
   no MongoDB, fechamento no sucesso, falhas de leitura e escrita com limpeza e
   rejeição de linha inválida.
+
+Evidência da segunda subetapa:
+
+- upload manual confirmado em
+  `/Volumes/workspace/credit_decision_hub/analytics_raw/proposals.ndjson`;
+- notebook source-format importado e executado no Databricks Serverless;
+- validação de JSON, chaves, schema, limites, enums e unicidade antes da
+  materialização;
+- tabelas Bronze e Silver com as 1.000 propostas da carga;
+- tabelas Gold para KPIs gerais, 13 distribuições categóricas e 13 competências
+  mensais;
+- total de 1.000 propostas, 200 aprovadas e taxa de aprovação de 20%;
+- incompatibilidade de `cache()/persist()` com Serverless identificada na
+  execução real e removida sem adicionar dependências.
+
+Validação da segunda subetapa:
+
+- compilação sintática do notebook com Python;
+- execução completa confirmada no Databricks Serverless;
+- nenhuma credencial, output do notebook ou dado analítico versionado.
 
 ## 6. Próxima tarefa
 
@@ -111,8 +132,10 @@ Testes adicionados:
 - branch: `main`;
 - última tarefa concluída: `CDH-013`;
 - tarefa ativa: `CDH-014`;
-- subetapa concluída: contrato e exportação analítica local em NDJSON;
-- próxima implementação: upload manual do artefato validado para o volume do Databricks e posterior notebook PySpark;
+- subetapas concluídas: contrato, exportação NDJSON, upload manual,
+  processamento PySpark e tabelas Delta analíticas;
+- próxima implementação: definir o contrato de consumo dos resultados
+  analíticos antes de alterar API ou dashboard;
 - bloqueios: nenhum;
 - push: não realizado nesta entrega.
 

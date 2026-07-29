@@ -36,11 +36,12 @@ Implementado:
 - autenticação, autorização por papel, gestão de analistas e decisões manuais;
 - dashboard operacional e consulta paginada da auditoria de decisões manuais;
 - contrato e exportação local reproduzível das propostas para NDJSON analítico;
+- processamento PySpark e tabelas Delta analíticas no Databricks;
 - temas claro e escuro e interface em PT-BR e inglês.
 
 Em execução:
 
-- upload manual, processamento PySpark e tabelas Delta da etapa analítica com Databricks.
+- definição da integração dos resultados analíticos com a aplicação.
 
 Não implementado:
 
@@ -667,7 +668,8 @@ flowchart LR
   Contract["packages/contracts<br/>schema Zod v1"] --> Exporter
   Exporter --> Ndjson["artifacts/analytics/proposals.ndjson"]
   Ndjson -. "upload manual" .-> Volume["/Volumes/workspace/credit_decision_hub/analytics_raw/"]
-  Volume -. "subetapa futura" .-> Delta["PySpark + Delta"]
+  Volume --> Notebook["notebook PySpark"]
+  Notebook --> Delta["tabelas Delta gerenciadas"]
 ```
 
 O contrato `analyticsProposalSchema` representa uma linha e possui
@@ -704,15 +706,56 @@ caminho alternativo pode ser passado como argumento ou pela variável
 `ANALYTICS_EXPORT_PATH`; caminhos relativos são resolvidos a partir da raiz do
 monorepo.
 
-O ambiente Databricks já possui:
+O ambiente Databricks possui:
 
 - catálogo `workspace`;
 - schema `workspace.credit_decision_hub`;
 - volume `workspace.credit_decision_hub.analytics_raw`.
 
-Esta subetapa não configura conexão direta, notebook, job ou infraestrutura. O
-próximo passo é enviar manualmente o arquivo validado ao volume. PySpark e
-tabelas Delta permanecem na continuação da `CDH-014`.
+O arquivo validado foi enviado manualmente para
+`/Volumes/workspace/credit_decision_hub/analytics_raw/proposals.ndjson`. Não há
+conexão direta com o MongoDB, job agendado ou credencial do Databricks no
+repositório.
+
+O notebook source-format
+`databricks/notebooks/process_proposals.py` é importável pelo workspace e
+executa as seguintes etapas:
+
+1. lê o NDJSON como texto e rejeita JSON inválido, chaves ausentes ou
+   inesperadas;
+2. aplica o schema PySpark correspondente ao contrato analítico `v1`;
+3. valida identificadores, datas, limites numéricos, enums, unicidade e
+   quantidade de registros;
+4. sobrescreve de forma idempotente somente as tabelas Delta desta POC;
+5. apresenta as contagens materializadas e os KPIs gerais ao final.
+
+Os valores canônicos de risco, status e motivo são explicitados no notebook
+como a implementação PySpark do contrato `v1`. Uma alteração futura desses
+valores exige nova versão do contrato e atualização conjunta do processamento,
+evitando aceitar silenciosamente uma semântica diferente.
+
+As camadas usam o mesmo schema do Unity Catalog e nomes explícitos, sem criar
+novos catálogos ou schemas:
+
+| Camada | Tabela | Responsabilidade |
+| --- | --- | --- |
+| Bronze | `analytics_proposals_bronze` | Preservar o contrato recebido com tipos explícitos |
+| Silver | `analytics_proposals_silver` | Normalizar nomes para `snake_case`, datas e competência mensal |
+| Gold | `analytics_proposal_kpis` | Consolidar total, aprovação, valores e comprometimento médio |
+| Gold | `analytics_proposal_distribution` | Agrupar risco, status e motivos de decisão |
+| Gold | `analytics_proposal_monthly` | Consolidar evolução mensal e taxa de aprovação |
+
+As tabelas são gerenciadas pelo Unity Catalog e gravadas em Delta por
+`saveAsTable`. O arquivo permanece no volume apenas como entrada bruta
+reproduzível.
+
+O processamento evita `cache()` e `persist()`, indisponíveis no compute
+Serverless usado pela Free Edition. Para a carga atual de 1.000 propostas, a
+releitura é proporcional e dispensa materialização intermediária.
+
+O notebook foi executado com sucesso no Serverless após essa adequação. Ele não
+altera o dashboard atual; a integração dos resultados analíticos permanece como
+próxima subetapa da `CDH-014`.
 
 ## 10. Estratégia de testes
 
@@ -798,6 +841,9 @@ tabelas Delta permanecem na continuação da `CDH-014`.
 | 2026-07-29 | Exibir distribuições sem biblioteca de gráficos nesta etapa | Preservar legibilidade e evitar dependência sem necessidade concreta |
 | 2026-07-29 | Separar o MongoDB operacional da carga analítica por exportação NDJSON manual | Criar uma fronteira reproduzível e auditável antes de automatizar a integração com o Databricks |
 | 2026-07-29 | Versionar e validar cada linha analítica com contrato Zod compartilhado | Impedir deriva de schema e vazamento de campos pessoais ou internos |
+| 2026-07-29 | Versionar o processamento como notebook Python source-format | Manter código revisável no Git sem armazenar outputs do workspace |
+| 2026-07-29 | Materializar Bronze, Silver e Gold como tabelas Delta gerenciadas no mesmo schema | Usar governança do Unity Catalog com uma estrutura proporcional à POC |
+| 2026-07-29 | Sobrescrever somente as tabelas analíticas da POC a cada execução | Tornar o processamento manual idempotente sem introduzir controle incremental prematuro |
 
 ## 13. Atualização deste documento
 
