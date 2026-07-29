@@ -25,10 +25,10 @@ const listResponse = (data = [customerFixture], page = 1, totalPages = 1) =>
     },
   );
 
-const componentRender = () =>
+const componentRender = (initialEntry = "/customers") =>
   renderWithProviders(
     [{ path: "/customers", element: <CustomersPage /> }],
-    ["/customers"],
+    [initialEntry],
   );
 
 describe("CustomersPage", () => {
@@ -103,12 +103,25 @@ describe("CustomersPage", () => {
       .mockResolvedValueOnce(listResponse([customerFixture], 1, 2))
       .mockResolvedValueOnce(listResponse([customerFixture], 2, 2));
 
-    componentRender();
+    const { router } = componentRender();
 
     fireEvent.click(await screen.findByRole("button", { name: "Próxima" }));
 
     expect(await screen.findByText("Página 2 de 2")).toBeInTheDocument();
+    expect(router.state.location.search).toBe("?page=2");
     expect(fetchMock).toHaveBeenLastCalledWith(
+      "/api/customers?page=2&limit=10",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+
+  test("should restore the customer page from a valid URL", async () => {
+    fetchMock.mockResolvedValue(listResponse([customerFixture], 2, 3));
+
+    componentRender("/customers?page=2");
+
+    expect(await screen.findByText("Página 2 de 3")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(
       "/api/customers?page=2&limit=10",
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );

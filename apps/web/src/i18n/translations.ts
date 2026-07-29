@@ -86,6 +86,23 @@ export const ptBRTranslations = {
   "proposals.emptyTitle": "Nenhuma proposta cadastrada",
   "proposals.emptyDescription":
     "Crie a primeira proposta fictícia para executar uma avaliação automática.",
+  "proposals.filteredEmptyTitle": "Nenhuma proposta encontrada",
+  "proposals.filteredEmptyDescription":
+    "Não existem propostas que correspondam aos filtros selecionados.",
+  "proposals.filters.title": "Filtros",
+  "proposals.filters.description":
+    "Refine a listagem usando os critérios disponíveis na API.",
+  "proposals.filters.status": "Status",
+  "proposals.filters.risk": "Risco",
+  "proposals.filters.createdFrom": "Criada a partir de",
+  "proposals.filters.createdTo": "Criada até",
+  "proposals.filters.minAmount": "Valor mínimo",
+  "proposals.filters.maxAmount": "Valor máximo",
+  "proposals.filters.all": "Todos",
+  "proposals.filters.apply": "Aplicar filtros",
+  "proposals.filters.clear": "Limpar filtros",
+  "proposals.filters.invalid":
+    "Revise os intervalos informados antes de aplicar os filtros.",
   "proposals.table.proposal": "Proposta",
   "proposals.table.amount": "Valor solicitado",
   "proposals.table.status": "Status",
@@ -259,6 +276,23 @@ export const enTranslations = {
   "proposals.emptyTitle": "No proposals yet",
   "proposals.emptyDescription":
     "Create the first fictional proposal to run an automatic assessment.",
+  "proposals.filteredEmptyTitle": "No proposals found",
+  "proposals.filteredEmptyDescription":
+    "No proposals match the selected filters.",
+  "proposals.filters.title": "Filters",
+  "proposals.filters.description":
+    "Refine the list using the criteria available in the API.",
+  "proposals.filters.status": "Status",
+  "proposals.filters.risk": "Risk",
+  "proposals.filters.createdFrom": "Created from",
+  "proposals.filters.createdTo": "Created to",
+  "proposals.filters.minAmount": "Minimum amount",
+  "proposals.filters.maxAmount": "Maximum amount",
+  "proposals.filters.all": "All",
+  "proposals.filters.apply": "Apply filters",
+  "proposals.filters.clear": "Clear filters",
+  "proposals.filters.invalid":
+    "Review the entered ranges before applying the filters.",
   "proposals.table.proposal": "Proposal",
   "proposals.table.amount": "Requested amount",
   "proposals.table.status": "Status",

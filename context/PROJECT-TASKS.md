@@ -33,54 +33,36 @@ As decisões de produto pertencem ao [`README.md`](./README.md). As decisões t�
 
 | Ordem | ID | Fase | Estado | Entrega |
 | --- | --- | --- | --- | --- |
-| 1 | `CDH-011` | 3 | `ACTIVE` | Implementar filtros e estados de navegação |
-| 2 | `CDH-012` | 4 | `NEXT` | Definir e implementar autenticação e permissões |
-| 3 | `CDH-013` | 4 | `PLANNED` | Implementar dashboard e auditoria |
-| 4 | `CDH-014` | 5 | `PLANNED` | Implementar etapa analítica com Databricks |
-| 5 | `CDH-015` | 6 | `PLANNED` | Implementar infraestrutura, CI/CD e deploy |
+| 1 | `CDH-012` | 4 | `ACTIVE` | Definir e implementar autenticação e permissões |
+| 2 | `CDH-013` | 4 | `NEXT` | Implementar dashboard e auditoria |
+| 3 | `CDH-014` | 5 | `PLANNED` | Implementar etapa analítica com Databricks |
+| 4 | `CDH-015` | 6 | `PLANNED` | Implementar infraestrutura, CI/CD e deploy |
 
 Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados somente quando se tornarem próximos, evitando especificação prematura.
 
-`CDH-016` foi priorizada e concluída por solicitação explícita para estabelecer o design system durante a Fase 3. A ordem e os identificadores das tarefas já planejadas foram preservados; `CDH-011` continua sendo a única tarefa ativa.
+`CDH-016` foi priorizada e concluída por solicitação explícita para estabelecer o design system durante a Fase 3. A ordem e os identificadores das tarefas já planejadas foram preservados.
 
 ## 5. Tarefa ativa
 
-### `CDH-011` — Filtros e estados de navegação
+### `CDH-012` — Autenticação e permissões
 
-Objetivo: permitir navegar pelos dados fictícios com filtros explícitos e previsíveis, reutilizando somente os parâmetros já suportados pela API.
+Objetivo: definir a identidade, os papéis e as permissões antes de implementar transições manuais ou áreas protegidas.
 
 Entregas:
 
-- mapear os filtros de clientes e propostas já disponíveis nos contratos;
-- refletir filtros e página na URL quando isso melhorar navegação e compartilhamento;
-- preservar filtros ao paginar;
-- diferenciar ausência total de dados de resultado vazio por filtro;
-- oferecer ação clara para limpar filtros;
-- manter consultas e serialização de parâmetros fora dos componentes visuais.
-
-Critérios de aceite:
-
-- parâmetros validados pelos contratos compartilhados;
-- URL, controles e requisição permanecem coerentes;
-- paginação retorna à primeira página quando um filtro altera a consulta;
-- estados e controles funcionam nos dois idiomas e temas;
-- comportamento coberto com React Testing Library;
-- `lint`, `typecheck`, `test` e `build` aprovados.
-
-Fora do escopo:
-
-- criar filtros não suportados pela API;
-- adicionar biblioteca de estado global;
-- implementar dashboard, autenticação ou decisões manuais;
-- alterar regras de domínio.
+- detalhar atores, papéis e limites de autorização;
+- definir contratos de autenticação e sessão;
+- escolher a estratégia técnica após registrar os requisitos;
+- proteger rotas e operações conforme os papéis aprovados;
+- habilitar transições manuais somente com identidade autenticada.
 
 ## 6. Próxima tarefa
 
-### `CDH-012` — Autenticação e permissões
+### `CDH-013` — Dashboard e auditoria
 
-- detalhar identidade, papéis e transições autorizadas somente após a conclusão da Fase 3;
-- definir o contrato de autenticação antes de escolher sua implementação;
-- não antecipar dashboard, auditoria ou infraestrutura.
+- detalhar indicadores operacionais depois que identidade e permissões estiverem implementadas;
+- apresentar histórico e auditoria conforme o usuário autenticado;
+- adicionar gráficos somente quando melhorarem a leitura dos indicadores.
 
 ## 7. Entregas concluídas
 
@@ -96,14 +78,15 @@ Fora do escopo:
 | `CDH-008` | Swagger / OpenAPI | `feat(api): documentar endpoints com OpenAPI (CDH-008)` | 94 testes, sete operações documentadas, Swagger UI validado no navegador e gates aprovados |
 | `CDH-009` | Fluxo front-end de clientes | `feat(web): implementar fluxo de clientes (CDH-009)` | 108 testes, cadastro, listagem, detalhe, paginação, temas, dois idiomas, acesso direto e integração real validados |
 | `CDH-010` | Fluxo front-end de propostas | `feat(web): implementar fluxo de propostas (CDH-010)` | 122 testes, criação, listagem, detalhe, histórico, paginação, dois idiomas, temas e integração read-only com o Atlas validados |
+| `CDH-011` | Filtros e estados de navegação | `feat(web): implementar filtros de propostas (CDH-011)` | 132 testes, parâmetros compartilhados, URL navegável, paginação preservada, estados vazios e inspeção real em dois idiomas e temas |
 | `CDH-016` | Design system e Storybook | `feat(ui): criar design system com Storybook (CDH-016)` | 127 testes, três componentes compartilhados, temas centralizados, catálogo estático e inspeção visual aprovados |
 
 ## 8. Handoff atual
 
 - branch: `main`;
-- última tarefa concluída: `CDH-016`;
-- tarefa ativa: `CDH-011`;
-- próxima implementação: filtros e estados de navegação;
+- última tarefa concluída: `CDH-011`;
+- tarefa ativa: `CDH-012`;
+- próxima implementação: definição de autenticação e permissões;
 - bloqueios: nenhum;
 - push: não realizado nesta entrega.
 

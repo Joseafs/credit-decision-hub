@@ -71,7 +71,10 @@ export const ProposalCreatePage = () => {
     setCustomerOptions({ status: "loading" });
 
     try {
-      const response = await listCustomers(1, signal, CUSTOMER_OPTIONS_LIMIT);
+      const response = await listCustomers(
+        { page: 1, limit: CUSTOMER_OPTIONS_LIMIT },
+        signal,
+      );
       setCustomerOptions({
         status: "success",
         customers: response.data,

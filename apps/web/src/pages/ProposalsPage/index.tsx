@@ -1,10 +1,15 @@
 import type { ProposalListResponse } from "@credit-decision-hub/contracts";
 import { FeedbackState } from "@credit-decision-hub/ui";
-import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
-import { listProposals } from "../../api/proposals";
+import {
+  listProposals,
+  parseProposalListQuery,
+  serializeProposalListQuery,
+} from "../../api/proposals";
 import { ProposalList } from "../../components/ProposalList";
+import { ProposalFilters } from "../../components/ProposalFilters";
 import { useAppPreferences } from "../../contexts/AppPreferencesContext";
 
 type ProposalsState =
@@ -13,18 +18,46 @@ type ProposalsState =
   | { status: "error" };
 
 export const ProposalsPage = () => {
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [proposalsState, setProposalsState] = useState<ProposalsState>({
     status: "loading",
   });
   const { locale, translate } = useAppPreferences();
+  const serializedSearch = searchParams.toString();
+  const { query, hasInvalidQuery } = useMemo(() => {
+    try {
+      return {
+        query: parseProposalListQuery(new URLSearchParams(serializedSearch)),
+        hasInvalidQuery: false,
+      };
+    } catch {
+      return {
+        query: parseProposalListQuery(new URLSearchParams()),
+        hasInvalidQuery: true,
+      };
+    }
+  }, [serializedSearch]);
+  const hasActiveFilters =
+    query.customerId !== undefined ||
+    query.status !== undefined ||
+    query.riskLevel !== undefined ||
+    query.createdFrom !== undefined ||
+    query.createdTo !== undefined ||
+    query.minRequestedAmount !== undefined ||
+    query.maxRequestedAmount !== undefined;
+
+  useEffect(() => {
+    if (hasInvalidQuery) {
+      setSearchParams(serializeProposalListQuery(query), { replace: true });
+    }
+  }, [hasInvalidQuery, query, setSearchParams]);
 
   const loadProposals = useCallback(
     async (signal?: AbortSignal) => {
       setProposalsState({ status: "loading" });
 
       try {
-        const response = await listProposals(page, signal);
+        const response = await listProposals(query, signal);
         setProposalsState({ status: "success", response });
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
@@ -34,7 +67,7 @@ export const ProposalsPage = () => {
         setProposalsState({ status: "error" });
       }
     },
-    [page],
+    [query],
   );
 
   useEffect(() => {
@@ -70,81 +103,135 @@ export const ProposalsPage = () => {
       </header>
 
       <div className="mt-8">
-        {proposalsState.status === "loading" && (
-          <FeedbackState title={translate("proposals.loading")} />
-        )}
+        <ProposalFilters
+          onApply={(nextQuery) =>
+            setSearchParams(serializeProposalListQuery(nextQuery))
+          }
+          onClear={() =>
+            setSearchParams(
+              serializeProposalListQuery({ page: 1, limit: query.limit }),
+            )
+          }
+          query={query}
+        />
 
-        {proposalsState.status === "error" && (
-          <FeedbackState
-            action={
-              <button
-                className="rounded-lg bg-danger px-4 py-2 font-semibold text-white"
-                onClick={() => void loadProposals()}
-                type="button"
-              >
-                {translate("proposals.retry")}
-              </button>
-            }
-            description={translate("proposals.errorDescription")}
-            title={translate("proposals.errorTitle")}
-            tone="danger"
-          />
-        )}
+        <div className="mt-6">
+          {proposalsState.status === "loading" && (
+            <FeedbackState title={translate("proposals.loading")} />
+          )}
 
-        {proposalsState.status === "success" &&
-          proposalsState.response.data.length === 0 && (
+          {proposalsState.status === "error" && (
             <FeedbackState
               action={
-                <Link
-                  className="inline-flex rounded-lg bg-primary px-4 py-2 font-semibold text-on-primary"
-                  to="/proposals/new"
+                <button
+                  className="rounded-lg bg-danger px-4 py-2 font-semibold text-white"
+                  onClick={() => void loadProposals()}
+                  type="button"
                 >
-                  {translate("proposals.new")}
-                </Link>
+                  {translate("proposals.retry")}
+                </button>
               }
-              description={translate("proposals.emptyDescription")}
-              title={translate("proposals.emptyTitle")}
+              description={translate("proposals.errorDescription")}
+              title={translate("proposals.errorTitle")}
+              tone="danger"
             />
           )}
 
-        {proposalsState.status === "success" &&
-          proposalsState.response.data.length > 0 && (
-            <>
-              <ProposalList
-                locale={locale}
-                proposals={proposalsState.response.data}
+          {proposalsState.status === "success" &&
+            proposalsState.response.data.length === 0 && (
+              <FeedbackState
+                action={
+                  hasActiveFilters ? (
+                    <button
+                      className="inline-flex rounded-lg bg-primary px-4 py-2 font-semibold text-on-primary"
+                      onClick={() =>
+                        setSearchParams(
+                          serializeProposalListQuery({
+                            page: 1,
+                            limit: query.limit,
+                          }),
+                        )
+                      }
+                      type="button"
+                    >
+                      {translate("proposals.filters.clear")}
+                    </button>
+                  ) : (
+                    <Link
+                      className="inline-flex rounded-lg bg-primary px-4 py-2 font-semibold text-on-primary"
+                      to="/proposals/new"
+                    >
+                      {translate("proposals.new")}
+                    </Link>
+                  )
+                }
+                description={translate(
+                  hasActiveFilters
+                    ? "proposals.filteredEmptyDescription"
+                    : "proposals.emptyDescription",
+                )}
+                title={translate(
+                  hasActiveFilters
+                    ? "proposals.filteredEmptyTitle"
+                    : "proposals.emptyTitle",
+                )}
               />
-              <nav
-                aria-label={translate("nav.paginationLabel")}
-                className="mt-5 flex items-center justify-between gap-4"
-              >
-                <button
-                  className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-heading transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-45"
-                  disabled={page === 1}
-                  onClick={() => setPage((currentPage) => currentPage - 1)}
-                  type="button"
+            )}
+
+          {proposalsState.status === "success" &&
+            proposalsState.response.data.length > 0 && (
+              <>
+                <ProposalList
+                  locale={locale}
+                  proposals={proposalsState.response.data}
+                />
+                <nav
+                  aria-label={translate("nav.paginationLabel")}
+                  className="mt-5 flex items-center justify-between gap-4"
                 >
-                  {translate("proposals.pagination.previous")}
-                </button>
-                <p className="text-sm text-muted">
-                  {translate("proposals.pagination.summary", {
-                    page: proposalsState.response.pagination.page,
-                    totalPages: proposalsState.response.pagination.totalPages,
-                  })}
-                </p>
-                <button
-                  className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-heading transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-45"
-                  disabled={
-                    page >= proposalsState.response.pagination.totalPages
-                  }
-                  onClick={() => setPage((currentPage) => currentPage + 1)}
-                  type="button"
-                >
-                  {translate("proposals.pagination.next")}
-                </button>
-              </nav>
-            </>
-          )}
+                  <button
+                    className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-heading transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-45"
+                    disabled={query.page === 1}
+                    onClick={() =>
+                      setSearchParams(
+                        serializeProposalListQuery({
+                          ...query,
+                          page: query.page - 1,
+                        }),
+                      )
+                    }
+                    type="button"
+                  >
+                    {translate("proposals.pagination.previous")}
+                  </button>
+                  <p className="text-sm text-muted">
+                    {translate("proposals.pagination.summary", {
+                      page: proposalsState.response.pagination.page,
+                      totalPages: proposalsState.response.pagination.totalPages,
+                    })}
+                  </p>
+                  <button
+                    className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-heading transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-45"
+                    disabled={
+                      query.page >=
+                      proposalsState.response.pagination.totalPages
+                    }
+                    onClick={() =>
+                      setSearchParams(
+                        serializeProposalListQuery({
+                          ...query,
+                          page: query.page + 1,
+                        }),
+                      )
+                    }
+                    type="button"
+                  >
+                    {translate("proposals.pagination.next")}
+                  </button>
+                </nav>
+              </>
+            )}
+        </div>
       </div>
     </section>
   );

@@ -1,9 +1,13 @@
 import type { CustomerListResponse } from "@credit-decision-hub/contracts";
 import { FeedbackState } from "@credit-decision-hub/ui";
-import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
-import { listCustomers } from "../../api/customers";
+import {
+  listCustomers,
+  parseCustomerListQuery,
+  serializeCustomerListQuery,
+} from "../../api/customers";
 import { CustomerList } from "../../components/CustomerList";
 import { useAppPreferences } from "../../contexts/AppPreferencesContext";
 
@@ -13,18 +17,38 @@ type CustomersState =
   | { status: "error" };
 
 export const CustomersPage = () => {
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [customersState, setCustomersState] = useState<CustomersState>({
     status: "loading",
   });
   const { locale, translate } = useAppPreferences();
+  const serializedSearch = searchParams.toString();
+  const { query, hasInvalidQuery } = useMemo(() => {
+    try {
+      return {
+        query: parseCustomerListQuery(new URLSearchParams(serializedSearch)),
+        hasInvalidQuery: false,
+      };
+    } catch {
+      return {
+        query: parseCustomerListQuery(new URLSearchParams()),
+        hasInvalidQuery: true,
+      };
+    }
+  }, [serializedSearch]);
+
+  useEffect(() => {
+    if (hasInvalidQuery) {
+      setSearchParams(serializeCustomerListQuery(query), { replace: true });
+    }
+  }, [hasInvalidQuery, query, setSearchParams]);
 
   const loadCustomers = useCallback(
     async (signal?: AbortSignal) => {
       setCustomersState({ status: "loading" });
 
       try {
-        const response = await listCustomers(page, signal);
+        const response = await listCustomers(query, signal);
         setCustomersState({ status: "success", response });
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
@@ -34,7 +58,7 @@ export const CustomersPage = () => {
         setCustomersState({ status: "error" });
       }
     },
-    [page],
+    [query],
   );
 
   useEffect(() => {
@@ -120,8 +144,15 @@ export const CustomersPage = () => {
               >
                 <button
                   className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-heading transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-45"
-                  disabled={page === 1}
-                  onClick={() => setPage((currentPage) => currentPage - 1)}
+                  disabled={query.page === 1}
+                  onClick={() =>
+                    setSearchParams(
+                      serializeCustomerListQuery({
+                        ...query,
+                        page: query.page - 1,
+                      }),
+                    )
+                  }
                   type="button"
                 >
                   {translate("customers.pagination.previous")}
@@ -135,9 +166,16 @@ export const CustomersPage = () => {
                 <button
                   className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-heading transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-45"
                   disabled={
-                    page >= customersState.response.pagination.totalPages
+                    query.page >= customersState.response.pagination.totalPages
                   }
-                  onClick={() => setPage((currentPage) => currentPage + 1)}
+                  onClick={() =>
+                    setSearchParams(
+                      serializeCustomerListQuery({
+                        ...query,
+                        page: query.page + 1,
+                      }),
+                    )
+                  }
                   type="button"
                 >
                   {translate("customers.pagination.next")}

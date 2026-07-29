@@ -32,11 +32,12 @@ Implementado:
 - fluxo front-end de criação, listagem paginada e consulta de clientes;
 - fluxo front-end de criação, listagem paginada e consulta de propostas;
 - biblioteca de componentes genéricos e catálogo Storybook;
+- filtros de propostas e paginação de listagens sincronizados com a URL;
 - temas claro e escuro e interface em PT-BR e inglês.
 
 Em execução:
 
-- filtros e estados de navegação.
+- definição de autenticação e permissões.
 
 Não implementado:
 
@@ -544,6 +545,23 @@ O tema e as paletas foram movidos para `packages/ui/src/theme.css`. O web e o St
 
 Novos componentes só devem ser adicionados ao pacote quando forem independentes do domínio e tiverem reutilização concreta ou estados isolados que justifiquem documentação. Páginas, chamadas HTTP, navegação, traduções específicas e regras de negócio permanecem no web.
 
+## 9.14 Filtros e estado de navegação
+
+As listagens usam a URL como fonte do estado compartilhável de paginação e filtros. Os parâmetros são lidos, validados e serializados na camada de API do front-end pelos schemas Zod de `packages/contracts`; os componentes visuais recebem consultas tipadas e não montam URLs.
+
+A listagem de clientes sincroniza somente `page` e `limit`, pois esses são os únicos parâmetros atualmente aceitos por seu contrato. Não foi criada busca local ou filtro sem suporte no back-end.
+
+A listagem de propostas oferece status, risco, período de criação e faixa de valor. O contrato também aceita `customerId`, mantido disponível para consumo programático, mas não exposto como campo textual porque um identificador técnico não oferece uma interação amigável. Um seletor por cliente exigirá uma decisão própria sobre busca e paginação das opções.
+
+Regras de navegação:
+
+- a aplicação de um filtro retorna à página `1`;
+- a troca de página preserva os filtros ativos;
+- parâmetros inválidos são descartados e a URL volta à consulta padrão;
+- a ausência total de propostas oferece a criação do primeiro registro;
+- um resultado vazio com filtros oferece a limpeza da consulta;
+- datas informadas na interface representam o início e o fim do dia em UTC no contrato HTTP.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -615,6 +633,8 @@ Novos componentes só devem ser adicionados ao pacote quando forem independentes
 | 2026-07-29 | Manter componentes genéricos em `packages/ui` e o Storybook como consumidor | Reutilizar apresentação sem levar domínio ou regras da aplicação ao design system |
 | 2026-07-29 | Centralizar tokens e paletas em `packages/ui` | Garantir que web e Storybook renderizem os mesmos temas a partir de uma única fonte |
 | 2026-07-29 | Adicionar componentes ao design system somente com reuso concreto | Evitar transformar toda implementação visual em abstração compartilhada |
+| 2026-07-29 | Usar a URL como fonte do estado de paginação e filtros | Preservar consultas na navegação, permitir compartilhamento e evitar estado global desnecessário |
+| 2026-07-29 | Expor na interface somente filtros suportados e amigáveis | Reutilizar os contratos sem criar busca local ou apresentar identificadores técnicos como experiência final |
 
 ## 13. Atualização deste documento
 
