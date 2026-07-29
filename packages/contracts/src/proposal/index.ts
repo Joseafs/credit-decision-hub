@@ -1,0 +1,33 @@
+export {
+  proposalDecisionReasonCodeSchema,
+  proposalHistoryActorTypeSchema,
+  proposalHistorySchema,
+  proposalStatusSchema,
+  type ProposalDecisionReasonCode,
+  type ProposalHistory,
+  type ProposalHistoryActorType,
+  type ProposalStatus,
+} from "./proposal-history.schema.js";
+export {
+  createProposalSchema,
+  listProposalsQuerySchema,
+  proposalFraudSignalSchema,
+  proposalIdParamsSchema,
+  proposalListResponseSchema,
+  proposalRiskLevelSchema,
+  proposalSchema,
+  type CreateProposalInput,
+  type ListProposalsQuery,
+  type Proposal,
+  type ProposalFraudSignal,
+  type ProposalIdParams,
+  type ProposalListResponse,
+  type ProposalRiskLevel,
+} from "./proposal.schema.js";
+export {
+  proposalDecisionReasonCodeValues,
+  proposalFraudSignalValues,
+  proposalHistoryActorTypeValues,
+  proposalRiskLevelValues,
+  proposalStatusValues,
+} from "./proposal.values.js";

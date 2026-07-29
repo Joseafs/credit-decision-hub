@@ -24,7 +24,8 @@ Implementado:
 - API Fastify;
 - contratos compartilhados de health e clientes;
 - conexão configurável com MongoDB Atlas;
-- criação, listagem paginada e consulta de clientes.
+- criação, listagem paginada e consulta de clientes;
+- contratos compartilhados e persistência de propostas.
 
 Definido:
 
@@ -32,11 +33,11 @@ Definido:
 
 Em execução:
 
-- contratos compartilhados e persistência de propostas.
+- motor de decisão, repository, service e endpoints de propostas.
 
 Não implementado:
 
-- propostas;
+- endpoints de propostas;
 - seed;
 - Swagger / OpenAPI;
 - telas de clientes e propostas;
@@ -320,6 +321,43 @@ Na Fase 2 será implementada somente a decisão automática inicial. Transiçõe
 | Fraude e documentação incompleta | `fraud_suspected` |
 | Renda mensal zero, sem fraude e com documentos completos | `rejected` |
 
+### 9.7 Contratos e persistência
+
+Os contratos de propostas são divididos por responsabilidade:
+
+- `proposal.values.ts` mantém os valores canônicos dos enums;
+- `proposal-history.schema.ts` define status, motivos, responsáveis e eventos;
+- `proposal.schema.ts` define entrada, resposta, parâmetros e filtros;
+- `index.ts` expõe a API pública do domínio.
+
+Todos os tipos públicos são inferidos dos schemas Zod. Os arrays canônicos de status, risco, motivos, indícios e responsáveis também são consumidos pelo Mongoose, evitando listas de valores duplicadas entre contrato e persistência.
+
+O contrato de criação é estrito e recebe somente dados informados pelo usuário. Ele rejeita comprometimento, risco, status, decisão e histórico, pois esses campos pertencem ao motor de decisão.
+
+O contrato de resposta:
+
+- exige ao menos um evento de histórico;
+- exige que o primeiro evento represente a criação;
+- exige que status e motivo atuais correspondam ao último evento;
+- exige histórico em ordem cronológica;
+- diferencia por tipo o responsável `system` do `analyst`;
+- exige `actorId` quando o responsável for um analista;
+- rejeita propriedades externas ao contrato.
+
+Os filtros compartilhados suportam cliente, status, risco, período, faixa de valor e paginação. Intervalos invertidos são rejeitados no contrato.
+
+O model Mongoose:
+
+- mantém valor, parcelas e score imutáveis;
+- representa histórico como subdocumentos;
+- reutiliza os valores canônicos exportados pelos contratos;
+- valida valores positivos, inteiros, enums e indícios sem duplicação;
+- cria índices compostos para cliente, status e risco por data;
+- cria índice para faixa de valor;
+- infere `ProposalPersistence` com `InferSchemaType`.
+
+O model não é exportado pelo pacote de contratos e documentos Mongoose não fazem parte das respostas da API. A conversão explícita será responsabilidade do repository.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -373,6 +411,9 @@ Na Fase 2 será implementada somente a decisão automática inicial. Transiçõe
 | 2026-07-29 | Adotar regras determinísticas e didáticas para propostas | Permitir implementação testável sem representar um motor financeiro real |
 | 2026-07-29 | Calcular comprometimento na API com parcela sem juros nesta fase | Manter uma única fonte para o cálculo e postergar complexidade financeira não especificada |
 | 2026-07-29 | Adiar transições manuais até existir identidade autenticada | Preservar a responsabilidade e a integridade do histórico |
+| 2026-07-29 | Separar valores, histórico e schemas de propostas dentro do domínio de contratos | Melhorar leitura e coesão sem criar abstrações genéricas |
+| 2026-07-29 | Reutilizar no Mongoose os valores canônicos exportados pelos contratos | Impedir divergência entre enums de aplicação e persistência |
+| 2026-07-29 | Validar coerência entre a proposta e seu último evento no contrato de resposta | Evitar estado atual incompatível com a trilha de decisão |
 
 ## 13. Atualização deste documento
 

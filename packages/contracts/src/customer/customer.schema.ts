@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import { entityIdSchema } from "../shared/entity.schema.js";
+import {
+  paginationMetadataSchema,
+  paginationQuerySchema,
+} from "../shared/pagination.schema.js";
+
 const customerFieldsSchema = z.object({
   name: z.string().trim().min(3).max(120),
   document: z.string().trim().min(5).max(30),
@@ -12,27 +18,19 @@ const customerFieldsSchema = z.object({
 export const createCustomerSchema = customerFieldsSchema;
 
 export const customerSchema = customerFieldsSchema.extend({
-  id: z.string().regex(/^[a-f\d]{24}$/i),
+  id: entityIdSchema,
   createdAt: z.iso.datetime(),
 });
 
 export const customerIdParamsSchema = z.object({
-  id: z.string().regex(/^[a-f\d]{24}$/i),
+  id: entityIdSchema,
 });
 
-export const listCustomersQuerySchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
-});
+export const listCustomersQuerySchema = paginationQuerySchema;
 
 export const customerListResponseSchema = z.object({
   data: z.array(customerSchema),
-  pagination: z.object({
-    page: z.number().int().positive(),
-    limit: z.number().int().positive(),
-    total: z.number().int().nonnegative(),
-    totalPages: z.number().int().nonnegative(),
-  }),
+  pagination: paginationMetadataSchema,
 });
 
 export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
