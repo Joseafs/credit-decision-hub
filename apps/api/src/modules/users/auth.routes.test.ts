@@ -2,6 +2,7 @@ import type { User } from "@credit-decision-hub/contracts";
 import { afterAll, describe, expect, test, vi } from "vitest";
 
 import { buildApp } from "../../app.js";
+import { InvalidCredentialsError } from "./user.errors.js";
 import type { UserService } from "./user.service.js";
 
 const createdAt = "2026-07-29T12:00:00.000Z";
@@ -70,6 +71,23 @@ describe("authentication routes", () => {
     });
     expect(response.statusCode).toBe(200);
     expect(response.json().user.role).toBe("analyst");
+  });
+
+  test("should return unauthorized for invalid credentials", async () => {
+    vi.mocked(userService.authenticate).mockRejectedValueOnce(
+      new InvalidCredentialsError(),
+    );
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/login",
+      payload: {
+        email: "unknown@example.test",
+        password: "invalid-demo-password",
+      },
+    });
+
+    expect(response.statusCode).toBe(401);
   });
 
   test("should forbid analysts and allow administrators on user management", async () => {

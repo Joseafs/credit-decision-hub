@@ -7,7 +7,10 @@ import type { HydratedDocument } from "mongoose";
 
 import { UserModel, type UserPersistence } from "./user.model.js";
 
-export type UserCredentials = User & { passwordHash: string };
+export type UserCredentials = {
+  user: User;
+  passwordHash: string;
+};
 export type UserToCreate = {
   name: string;
   email: string;
@@ -40,7 +43,9 @@ export const userRepository: UserRepository = {
     const user = await UserModel.findOne({ email })
       .select("+passwordHash")
       .exec();
-    return user ? { ...toUser(user), passwordHash: user.passwordHash } : null;
+    return user
+      ? { user: toUser(user), passwordHash: user.passwordHash }
+      : null;
   },
   async findById(id) {
     const user = await UserModel.findById(id).exec();

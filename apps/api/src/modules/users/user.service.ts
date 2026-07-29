@@ -20,12 +20,12 @@ export const createUserService = (repository: UserRepository): UserService => ({
   async authenticate(input) {
     const credentials = await repository.findByEmailWithPassword(input.email);
     if (
-      !credentials?.active ||
+      !credentials?.user.active ||
       !(await verifyPassword(input.password, credentials.passwordHash))
     ) {
       throw new InvalidCredentialsError();
     }
-    return userSchema.parse(credentials);
+    return userSchema.parse(credentials.user);
   },
   async createAnalyst(input) {
     try {
