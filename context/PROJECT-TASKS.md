@@ -127,7 +127,7 @@ Entregas:
 - [x] preparar URL pública, CORS restrito e cookie seguro para a comunicação
   entre Vercel e Render;
 - [x] versionar o workflow de validações automatizadas no GitHub;
-- [ ] confirmar a primeira execução verde no GitHub Actions;
+- [x] confirmar a primeira execução verde no GitHub Actions;
 - [ ] preparar Vercel, Render e MongoDB Atlas conforme a arquitetura aprovada;
 - [ ] validar os deploys e o estado de inicialização da demonstração;
 - [ ] avaliar Terraform para os recursos suportados pelos provedores escolhidos.
@@ -154,7 +154,10 @@ Evidência da segunda subetapa:
 - instalação congelada, lint, tipos, testes e build executados em um único job;
 - concorrência cancelável, timeout de 15 minutos e nenhuma etapa de deploy;
 - YAML validado localmente e 186 testes aprovados;
-- primeira execução hospedada pendente até o push do commit.
+- execução `#1` confirmada no GitHub Actions após o push do commit `e9416de`;
+- job completo concluído com status `Success` em 1 minuto e 4 segundos;
+- relatórios confirmaram 48 arquivos de teste e 186 testes aprovados nos quatro
+  workspaces testados.
 
 ## 7. Entregas concluídas
 
@@ -181,10 +184,11 @@ Evidência da segunda subetapa:
 - branch: `main`;
 - última tarefa concluída: `CDH-014`;
 - tarefa ativa: `CDH-015`;
-- subetapas concluídas: prontidão cross-origin e workflow de qualidade;
-- próxima ação: enviar o commit e confirmar a primeira execução verde no GitHub
-  Actions antes de configurar Render ou Vercel;
-- bloqueio: a validação hospedada depende do push pelo usuário;
+- subetapas concluídas: prontidão cross-origin, workflow de qualidade e primeira
+  execução verde no GitHub Actions;
+- próxima ação: preparar e configurar a API no Render;
+- bloqueio: a criação do Web Service e o cadastro dos segredos dependem da conta
+  do usuário no Render;
 - push: não realizado nesta entrega.
 
 Ao encerrar uma tarefa, registrar:

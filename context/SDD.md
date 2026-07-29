@@ -883,8 +883,9 @@ canceladas e o job possui timeout de 15 minutos, reduzindo consumo desnecessári
 da cota gratuita.
 
 O workflow foi validado localmente quanto ao YAML e todos os comandos foram
-executados com sucesso. A confirmação da primeira execução no runner hospedado
-permanece pendente até o commit ser enviado ao GitHub.
+executados com sucesso. A primeira execução no runner hospedado também foi
+confirmada: o push do commit `e9416de` na `main` concluiu o job completo com
+status `Success` em 1 minuto e 4 segundos.
 
 ## 10. Estratégia de testes
 
