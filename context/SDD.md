@@ -35,11 +35,12 @@ Implementado:
 - filtros de propostas e paginação de listagens sincronizados com a URL;
 - autenticação, autorização por papel, gestão de analistas e decisões manuais;
 - dashboard operacional e consulta paginada da auditoria de decisões manuais;
+- contrato e exportação local reproduzível das propostas para NDJSON analítico;
 - temas claro e escuro e interface em PT-BR e inglês.
 
 Em execução:
 
-- etapa analítica com Databricks.
+- upload manual, processamento PySpark e tabelas Delta da etapa analítica com Databricks.
 
 Não implementado:
 
@@ -56,9 +57,16 @@ flowchart LR
   Contracts --> Api
   Ui["packages/ui<br/>componentes + tema"] --> Web
   Ui --> Storybook["apps/storybook<br/>catálogo visual"]
+  Mongo -. "exportação local NDJSON" .-> Artifact["artifacts/analytics"]
+  Artifact -. "upload manual" .-> Databricks["Databricks<br/>Unity Catalog + Volume"]
 ```
 
 O front-end acessa dados apenas pela API. O pacote de contratos é reutilizado pelos dois lados e não conhece detalhes de interface, Fastify, Mongoose ou banco de dados.
+
+O fluxo analítico é deliberadamente desacoplado do tráfego HTTP. O MongoDB
+continua como banco operacional; o arquivo NDJSON é uma fotografia reproduzível
+para processamento posterior e não cria sincronização direta entre a API e o
+Databricks.
 
 ## 4. Organização do monorepo
 
@@ -648,6 +656,64 @@ valida novamente o payload recebido. Nenhum gráfico foi adicionado: para a
 quantidade atual de categorias, números e listas oferecem leitura mais direta
 sem introduzir biblioteca de visualização.
 
+## 9.17 Exportação analítica para Databricks
+
+A primeira subetapa da `CDH-014` estabelece a fronteira entre o banco
+operacional e a futura camada analítica:
+
+```mermaid
+flowchart LR
+  Mongo["MongoDB Atlas"] --> Exporter["apps/api<br/>exportador local"]
+  Contract["packages/contracts<br/>schema Zod v1"] --> Exporter
+  Exporter --> Ndjson["artifacts/analytics/proposals.ndjson"]
+  Ndjson -. "upload manual" .-> Volume["/Volumes/workspace/credit_decision_hub/analytics_raw/"]
+  Volume -. "subetapa futura" .-> Delta["PySpark + Delta"]
+```
+
+O contrato `analyticsProposalSchema` representa uma linha e possui
+`exportVersion: "1"`. Ele contém:
+
+- identificadores técnicos de proposta e cliente;
+- datas de criação e atualização;
+- valor solicitado, parcelas e parcela estimada;
+- renda mensal e ocupação;
+- score, comprometimento, risco, status e código do motivo da decisão.
+
+`risk`, `status` e `decisionReason` reutilizam os schemas canônicos de
+propostas. `decisionReason` contém o código estável, como `eligible`, e não a
+mensagem localizada. O tipo TypeScript é inferido do mesmo schema Zod usado
+para validar cada linha antes da escrita.
+
+Nome, documento, e-mail, telefone, credenciais, tokens, cookies, `_id`, `__v`,
+`seedKey` e histórico completo são proibidos nessa fronteira. `occupation` é
+mantido por ser uma dimensão analítica aprovada e não um identificador pessoal
+direto no dataset fictício.
+
+O comando `pnpm analytics:export`:
+
+- lê propostas com cursor de agregação e lotes de 100 registros;
+- associa somente renda e ocupação da collection de clientes;
+- ordena por `_id`, garantindo ordem estável;
+- grava uma linha JSON por proposta;
+- usa um arquivo `.partial` e só publica o destino após concluir a leitura;
+- fecha o cursor e a conexão mesmo em caso de erro;
+- remove o arquivo parcial quando a leitura, validação ou escrita falha.
+
+O destino padrão é `artifacts/analytics/proposals.ndjson`, ignorado pelo Git. Um
+caminho alternativo pode ser passado como argumento ou pela variável
+`ANALYTICS_EXPORT_PATH`; caminhos relativos são resolvidos a partir da raiz do
+monorepo.
+
+O ambiente Databricks já possui:
+
+- catálogo `workspace`;
+- schema `workspace.credit_decision_hub`;
+- volume `workspace.credit_decision_hub.analytics_raw`.
+
+Esta subetapa não configura conexão direta, notebook, job ou infraestrutura. O
+próximo passo é enviar manualmente o arquivo validado ao volume. PySpark e
+tabelas Delta permanecem na continuação da `CDH-014`.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -730,6 +796,8 @@ sem introduzir biblioteca de visualização.
 | 2026-07-29 | Derivar auditoria do histórico de propostas | Manter uma única fonte de verdade e evitar duplicação de eventos |
 | 2026-07-29 | Calcular indicadores operacionais por agregações de leitura no MongoDB | Evitar transferir coleções completas para a aplicação e manter métricas consistentes |
 | 2026-07-29 | Exibir distribuições sem biblioteca de gráficos nesta etapa | Preservar legibilidade e evitar dependência sem necessidade concreta |
+| 2026-07-29 | Separar o MongoDB operacional da carga analítica por exportação NDJSON manual | Criar uma fronteira reproduzível e auditável antes de automatizar a integração com o Databricks |
+| 2026-07-29 | Versionar e validar cada linha analítica com contrato Zod compartilhado | Impedir deriva de schema e vazamento de campos pessoais ou internos |
 
 ## 13. Atualização deste documento
 

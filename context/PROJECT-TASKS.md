@@ -46,9 +46,37 @@ Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados 
 
 Entregas:
 
-- definir o contrato de exportação do dataset fictício;
-- criar processamento analítico sem substituir o MongoDB operacional;
+- [x] definir o contrato versionado de exportação do dataset fictício;
+- [x] criar o comando local, reproduzível e validado de exportação em NDJSON;
+- [x] confirmar duas exportações reais e idênticas das 1.000 propostas do Atlas;
+- [ ] enviar manualmente o NDJSON ao volume `workspace.credit_decision_hub.analytics_raw`;
+- [ ] criar o processamento PySpark e as tabelas Delta;
 - integrar resultados somente depois de existir uma saída reproduzível.
+
+Evidência da primeira subetapa:
+
+- `pnpm analytics:export` gera `artifacts/analytics/proposals.ndjson`;
+- 1.000 linhas reais foram validadas individualmente pelo contrato Zod;
+- duas exportações produziram o mesmo SHA-256:
+  `ec97c490f1bbc34d0ceb5126d316dd979d4fe1f7a8f103e02cf81d166063b5f9`;
+- dados pessoais diretos e metadados internos não fazem parte do contrato;
+- `lint`, `typecheck`, 168 testes e `build` foram aprovados.
+
+Comandos executados:
+
+- `pnpm lint`;
+- `pnpm typecheck`;
+- `pnpm test`;
+- `pnpm build`;
+- `pnpm analytics:export`, incluindo duas saídas independentes para comparação.
+
+Testes adicionados:
+
+- quatro casos do contrato analítico: linha válida, propriedades extras e dados
+  pessoais, enums canônicos e renda zero;
+- sete casos do exportador: NDJSON e contagem, conteúdo reproduzível, ordenação
+  no MongoDB, fechamento no sucesso, falhas de leitura e escrita com limpeza e
+  rejeição de linha inválida.
 
 ## 6. Próxima tarefa
 
@@ -83,7 +111,8 @@ Entregas:
 - branch: `main`;
 - última tarefa concluída: `CDH-013`;
 - tarefa ativa: `CDH-014`;
-- próxima implementação: definição do contrato de exportação analítica;
+- subetapa concluída: contrato e exportação analítica local em NDJSON;
+- próxima implementação: upload manual do artefato validado para o volume do Databricks e posterior notebook PySpark;
 - bloqueios: nenhum;
 - push: não realizado nesta entrega.
 

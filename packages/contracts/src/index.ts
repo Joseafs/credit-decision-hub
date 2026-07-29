@@ -28,6 +28,12 @@ export {
   type LoginInput,
 } from "./auth/index.js";
 export {
+  analyticsProposalExportVersionSchema,
+  analyticsProposalSchema,
+  type AnalyticsProposal,
+  type AnalyticsProposalExportVersion,
+} from "./analytics/index.js";
+export {
   apiErrorResponseSchema,
   validationErrorResponseSchema,
   type ApiErrorResponse,

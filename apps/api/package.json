@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "analytics:export": "tsx src/analytics/export-proposals.ts",
     "build": "tsc -p tsconfig.build.json",
     "bootstrap:admin": "tsx src/database/bootstrap-admin.ts",
     "dev": "tsx watch src/server.ts",

@@ -3,6 +3,7 @@ node_modules/
 coverage/
 dist/
 storybook-static/
+/artifacts/
 
 .env
 .env.*

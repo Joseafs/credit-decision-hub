@@ -8,6 +8,7 @@
     "pnpm": ">=10.26.0"
   },
   "scripts": {
+    "analytics:export": "pnpm --filter @credit-decision-hub/api analytics:export",
     "dev": "turbo dev",
     "build": "turbo build",
     "test": "turbo test",
