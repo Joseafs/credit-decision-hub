@@ -126,7 +126,8 @@ Entregas:
 
 - [x] preparar URL pública, CORS restrito e cookie seguro para a comunicação
   entre Vercel e Render;
-- [ ] configurar validações automatizadas no GitHub;
+- [x] versionar o workflow de validações automatizadas no GitHub;
+- [ ] confirmar a primeira execução verde no GitHub Actions;
 - [ ] preparar Vercel, Render e MongoDB Atlas conforme a arquitetura aprovada;
 - [ ] validar os deploys e o estado de inicialização da demonstração;
 - [ ] avaliar Terraform para os recursos suportados pelos provedores escolhidos.
@@ -144,6 +145,16 @@ Evidência da primeira subetapa:
 - `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm typecheck`, 186 testes e
   `pnpm build` com `VITE_API_URL` de produção aprovados;
 - origem pública confirmada no bundle estático gerado pelo Vite.
+
+Evidência da segunda subetapa:
+
+- workflow acionado por pull requests e pushes na `main`;
+- actions fixadas por SHA completo e token limitado a `contents: read`;
+- pnpm obtido de `packageManager`, Node.js 22 e cache pelo lockfile;
+- instalação congelada, lint, tipos, testes e build executados em um único job;
+- concorrência cancelável, timeout de 15 minutos e nenhuma etapa de deploy;
+- YAML validado localmente e 186 testes aprovados;
+- primeira execução hospedada pendente até o push do commit.
 
 ## 7. Entregas concluídas
 
@@ -170,10 +181,10 @@ Evidência da primeira subetapa:
 - branch: `main`;
 - última tarefa concluída: `CDH-014`;
 - tarefa ativa: `CDH-015`;
-- subetapa concluída: prontidão cross-origin entre web e API;
-- próxima implementação: automatizar `lint`, `typecheck`, `test` e `build` no
-  GitHub Actions sem adicionar etapas de deploy;
-- bloqueios: nenhum;
+- subetapas concluídas: prontidão cross-origin e workflow de qualidade;
+- próxima ação: enviar o commit e confirmar a primeira execução verde no GitHub
+  Actions antes de configurar Render ou Vercel;
+- bloqueio: a validação hospedada depende do push pelo usuário;
 - push: não realizado nesta entrega.
 
 Ao encerrar uma tarefa, registrar:

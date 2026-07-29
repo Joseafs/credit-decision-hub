@@ -40,6 +40,7 @@ Implementado:
 - consumo protegido dos KPIs do Databricks pela API e pelo dashboard;
 - comunicação autenticada configurável entre web e API hospedadas em origens
   diferentes;
+- workflow de qualidade preparado para GitHub Actions;
 - temas claro e escuro e interface em PT-BR e inglês.
 
 Em execução:
@@ -853,6 +854,38 @@ Docker não foi adicionado: Render executa Node.js nativamente e Vercel publica 
 build estático do Vite. Nesta arquitetura, um container aumentaria a superfície
 de manutenção sem resolver uma necessidade de execução.
 
+## 9.20 Validação contínua no GitHub
+
+O workflow `.github/workflows/quality.yml` prepara a validação automatizada para
+pull requests e pushes na branch `main`. Ele não contém etapa de deploy, acesso
+a provedores ou leitura de segredos.
+
+A automação usa um único job em Ubuntu e executa, em ordem:
+
+1. checkout do código;
+2. instalação do pnpm na versão declarada em `packageManager`;
+3. Node.js 22 com cache do store do pnpm baseado em `pnpm-lock.yaml`;
+4. `pnpm install --frozen-lockfile`;
+5. `pnpm lint`;
+6. `pnpm typecheck`;
+7. `pnpm test`;
+8. `pnpm build` com uma `VITE_API_URL` pública de exemplo.
+
+Um job único mantém o resultado fácil de ler e evita repetir instalação em
+quatro runners. O Turborepo continua paralelizando os pacotes dentro de cada
+comando. Uma futura separação de jobs só será justificada se o tempo medido da
+CI ou a necessidade de diagnósticos independentes superar esse custo.
+
+As actions são fixadas por SHA completo e identificadas por comentários de
+versão. O token automático possui somente `contents: read`; o evento
+`pull_request_target` não é usado. Execuções anteriores da mesma referência são
+canceladas e o job possui timeout de 15 minutos, reduzindo consumo desnecessário
+da cota gratuita.
+
+O workflow foi validado localmente quanto ao YAML e todos os comandos foram
+executados com sucesso. A confirmação da primeira execução no runner hospedado
+permanece pendente até o commit ser enviado ao GitHub.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -947,6 +980,8 @@ de manutenção sem resolver uma necessidade de execução.
 | 2026-07-29 | Restringir CORS a uma `WEB_ORIGIN` exata com credenciais | Permitir a sessão entre Vercel e Render sem abrir a API para origens arbitrárias |
 | 2026-07-29 | Usar `SameSite=None` e `Secure` somente no ambiente hospedado | Compatibilizar o cookie HttpOnly com HTTPS cross-site sem enfraquecer o fluxo local |
 | 2026-07-29 | Não adicionar Docker à arquitetura atual de hospedagem | Vercel e Render atendem os runtimes nativamente e um container não resolve uma necessidade concreta |
+| 2026-07-29 | Executar os gates da CI em um único job sem segredos | Reduzir minutos e duplicação de instalação enquanto o Turborepo paraleliza os pacotes |
+| 2026-07-29 | Fixar actions por SHA completo e limitar o token a leitura | Tornar as dependências imutáveis e aplicar menor privilégio ao workflow |
 
 ## 13. Atualização deste documento
 
