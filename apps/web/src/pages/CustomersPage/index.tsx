@@ -1,10 +1,10 @@
 import type { CustomerListResponse } from "@credit-decision-hub/contracts";
+import { FeedbackState } from "@credit-decision-hub/ui";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { listCustomers } from "../../api/customers";
 import { CustomerList } from "../../components/CustomerList";
-import { FeedbackState } from "../../components/FeedbackState";
 import { useAppPreferences } from "../../contexts/AppPreferencesContext";
 
 type CustomersState =

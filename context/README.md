@@ -105,6 +105,31 @@ Princípio principal:
 
 Formik controla o estado dos formulários. Zod valida os dados.
 
+### Componentes compartilhados — `packages/ui`
+
+- React
+- TypeScript
+- Tailwind CSS
+- Vitest
+- React Testing Library
+
+Responsabilidades:
+
+- componentes visuais genéricos;
+- tokens semânticos dos temas claro e escuro;
+- tipos públicos dos componentes;
+- testes de comportamento isolados.
+
+O pacote não deve depender de contratos de crédito, API, React Router ou regras de negócio. Componentes específicos de clientes e propostas permanecem em `apps/web`.
+
+### Catálogo visual — `apps/storybook`
+
+- Storybook
+- React
+- Vite
+
+O Storybook documenta e demonstra os componentes de `packages/ui`. Ele é consumidor da biblioteca, não sua fonte, e não deve conter regras ou componentes exclusivos da aplicação.
+
 ### Banco de dados
 
 MongoDB será o banco operacional da aplicação.
@@ -146,9 +171,11 @@ Não adicionar essas tecnologias antes de existir uma necessidade concreta na fa
 credit-decision-hub/
 ├── apps/
 │   ├── web/
-│   └── api/
+│   ├── api/
+│   └── storybook/
 ├── packages/
-│   └── contracts/
+│   ├── contracts/
+│   └── ui/
 ├── databricks/
 ├── infrastructure/
 │   └── terraform/
@@ -359,6 +386,9 @@ src/components/ProposalCard/
 Princípios:
 
 - separar apresentação, estado e integração;
+- manter componentes genéricos e tokens de tema em `packages/ui`;
+- documentar componentes compartilhados em `apps/storybook`;
+- manter componentes de domínio em `apps/web`;
 - reutilizar contratos compartilhados;
 - manter chamadas HTTP fora dos componentes visuais;
 - usar Formik para controle dos formulários;
@@ -564,6 +594,7 @@ Referências oficiais consultadas:
 
 ### Fase 3 — Front-end
 
+- criar a fundação do design system e seu catálogo visual;
 - criar listagem de propostas;
 - criar detalhes;
 - criar formulário com Formik e Zod;

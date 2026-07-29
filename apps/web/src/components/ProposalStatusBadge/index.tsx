@@ -1,24 +1,27 @@
+import { StatusBadge, type StatusBadgeProps } from "@credit-decision-hub/ui";
+
 import { useAppPreferences } from "../../contexts/AppPreferencesContext";
 import { proposalStatusTranslationKeys } from "../../i18n/proposalLabels";
 import type { ProposalStatusBadgeProps } from "./types";
 
-const statusClassNames: Record<ProposalStatusBadgeProps["status"], string> = {
-  pending: "bg-surface-subtle text-muted",
-  approved: "bg-success-soft text-success",
-  rejected: "bg-danger-soft text-danger",
-  manual_review: "bg-warning-soft text-warning",
-  pending_documents: "bg-warning-soft text-warning",
-  fraud_suspected: "bg-danger-soft text-danger",
+const statusTones: Record<
+  ProposalStatusBadgeProps["status"],
+  NonNullable<StatusBadgeProps["tone"]>
+> = {
+  pending: "neutral",
+  approved: "success",
+  rejected: "danger",
+  manual_review: "warning",
+  pending_documents: "warning",
+  fraud_suspected: "danger",
 };
 
 export const ProposalStatusBadge = ({ status }: ProposalStatusBadgeProps) => {
   const { translate } = useAppPreferences();
 
   return (
-    <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusClassNames[status]}`}
-    >
+    <StatusBadge tone={statusTones[status]}>
       {translate(proposalStatusTranslationKeys[status])}
-    </span>
+    </StatusBadge>
   );
 };

@@ -31,6 +31,7 @@ Implementado:
 - documentação OpenAPI navegável;
 - fluxo front-end de criação, listagem paginada e consulta de clientes;
 - fluxo front-end de criação, listagem paginada e consulta de propostas;
+- biblioteca de componentes genéricos e catálogo Storybook;
 - temas claro e escuro e interface em PT-BR e inglês.
 
 Em execução:
@@ -53,6 +54,8 @@ flowchart LR
   Api --> Mongo["MongoDB Atlas"]
   Contracts["packages/contracts<br/>Zod + tipos inferidos"] --> Web
   Contracts --> Api
+  Ui["packages/ui<br/>componentes + tema"] --> Web
+  Ui --> Storybook["apps/storybook<br/>catálogo visual"]
 ```
 
 O front-end acessa dados apenas pela API. O pacote de contratos é reutilizado pelos dois lados e não conhece detalhes de interface, Fastify, Mongoose ou banco de dados.
@@ -90,6 +93,28 @@ Responsável por:
 - tipos TypeScript inferidos com `z.infer`.
 
 Um tipo de contrato não deve ser escrito manualmente em outra aplicação.
+
+### `packages/ui`
+
+Responsável por:
+
+- componentes React genéricos;
+- tipos públicos das propriedades;
+- tokens semânticos e paletas dos temas;
+- testes de comportamento dos componentes.
+
+Não depende de contratos, API, Router ou domínios da aplicação.
+
+### `apps/storybook`
+
+Responsável por:
+
+- documentar os componentes exportados por `packages/ui`;
+- demonstrar variantes e estados isolados;
+- permitir inspeção nos temas claro e escuro;
+- gerar um catálogo estático pelo build do monorepo.
+
+O Storybook é uma aplicação consumidora. Componentes não são implementados dentro dela.
 
 ### Pacotes de configuração
 
@@ -503,6 +528,22 @@ Status, risco, motivos, indícios de fraude e responsáveis são recebidos como 
 
 Os componentes de lista e indicador de status são separados das páginas por terem responsabilidade visual reutilizável. Estados de carregamento, lista vazia, erro, sucesso e paginação seguem os mesmos padrões do fluxo de clientes e usam os tokens semânticos dos temas.
 
+## 9.13 Design system e Storybook
+
+`packages/ui` estabelece a fronteira dos componentes compartilhados. Sua primeira versão exporta:
+
+- `Button`, baseado nos atributos nativos e em variantes semânticas;
+- `FeedbackState`, extraído do front-end por já ser usado em diferentes domínios;
+- `StatusBadge`, indicador genérico consumido pelo adaptador de status de propostas.
+
+`ProposalStatusBadge` permanece em `apps/web`: ele conhece o contrato e traduz cada status para texto e tom. `StatusBadge` conhece apenas apresentação. Essa composição impede que o design system dependa do domínio de crédito.
+
+O tema e as paletas foram movidos para `packages/ui/src/theme.css`. O web e o Storybook importam a mesma fonte e registram explicitamente os arquivos do pacote para a detecção de classes do Tailwind no monorepo. Alterar uma paleta continua exigindo mudança em um único lugar.
+
+`apps/storybook` usa o framework React com Vite e contém somente configuração e stories. O catálogo oferece documentação automática, controles e seleção global de tema. Seu build gera `storybook-static`, tratado como artefato do Turborepo e ignorado pelo Git.
+
+Novos componentes só devem ser adicionados ao pacote quando forem independentes do domínio e tiverem reutilização concreta ou estados isolados que justifiquem documentação. Páginas, chamadas HTTP, navegação, traduções específicas e regras de negócio permanecem no web.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -571,6 +612,9 @@ Os componentes de lista e indicador de status são separados das páginas por te
 | 2026-07-29 | Reservar `/api` para o proxy HTTP do front-end em desenvolvimento | Evitar colisão entre endpoints da API e acessos diretos às rotas do React Router |
 | 2026-07-29 | Manter a API como fonte única da avaliação exibida no fluxo de propostas | Evitar divergência entre cálculos, decisão persistida e apresentação |
 | 2026-07-29 | Traduzir valores canônicos de propostas por mapas tipados no front-end | Oferecer dois idiomas sem duplicar ou localizar o contrato de domínio |
+| 2026-07-29 | Manter componentes genéricos em `packages/ui` e o Storybook como consumidor | Reutilizar apresentação sem levar domínio ou regras da aplicação ao design system |
+| 2026-07-29 | Centralizar tokens e paletas em `packages/ui` | Garantir que web e Storybook renderizem os mesmos temas a partir de uma única fonte |
+| 2026-07-29 | Adicionar componentes ao design system somente com reuso concreto | Evitar transformar toda implementação visual em abstração compartilhada |
 
 ## 13. Atualização deste documento
 

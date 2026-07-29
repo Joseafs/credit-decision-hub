@@ -13,6 +13,8 @@
     "test": "turbo test",
     "lint": "turbo lint",
     "seed": "pnpm --filter @credit-decision-hub/api seed",
+    "storybook": "pnpm --filter @credit-decision-hub/storybook dev",
+    "storybook:build": "pnpm --filter @credit-decision-hub/storybook build",
     "typecheck": "turbo typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

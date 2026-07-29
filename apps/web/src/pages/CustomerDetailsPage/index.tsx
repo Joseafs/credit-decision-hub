@@ -1,9 +1,9 @@
 import type { Customer } from "@credit-decision-hub/contracts";
+import { FeedbackState } from "@credit-decision-hub/ui";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
 import { getCustomer } from "../../api/customers";
-import { FeedbackState } from "../../components/FeedbackState";
 import { useAppPreferences } from "../../contexts/AppPreferencesContext";
 import { formatCurrency, formatDate } from "../../i18n/formatters";
 

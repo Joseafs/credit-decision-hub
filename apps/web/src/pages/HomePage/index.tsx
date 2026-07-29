@@ -1,4 +1,5 @@
 import type { HealthResponse } from "@credit-decision-hub/contracts";
+import { Button } from "@credit-decision-hub/ui";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -104,13 +105,13 @@ export const HomePage = () => {
           </div>
 
           {healthState.status === "error" && (
-            <button
-              className="mt-5 w-full rounded-xl bg-primary px-4 py-3 font-semibold text-on-primary transition hover:bg-primary-hover"
+            <Button
+              className="mt-5"
+              fullWidth
               onClick={() => void checkHealth()}
-              type="button"
             >
               {translate("home.apiRetry")}
-            </button>
+            </Button>
           )}
         </aside>
       </div>

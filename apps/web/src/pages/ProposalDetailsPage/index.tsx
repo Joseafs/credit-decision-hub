@@ -1,9 +1,9 @@
 import type { Proposal } from "@credit-decision-hub/contracts";
+import { FeedbackState } from "@credit-decision-hub/ui";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
 import { getProposal } from "../../api/proposals";
-import { FeedbackState } from "../../components/FeedbackState";
 import { ProposalStatusBadge } from "../../components/ProposalStatusBadge";
 import { useAppPreferences } from "../../contexts/AppPreferencesContext";
 import {

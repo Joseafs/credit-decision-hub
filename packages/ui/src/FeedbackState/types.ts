@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export type FeedbackStateProps = {
   action?: ReactNode;
-  description?: string;
+  description?: ReactNode;
   title: string;
   tone?: "neutral" | "danger";
 };

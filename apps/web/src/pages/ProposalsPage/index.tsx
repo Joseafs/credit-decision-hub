@@ -1,9 +1,9 @@
 import type { ProposalListResponse } from "@credit-decision-hub/contracts";
+import { FeedbackState } from "@credit-decision-hub/ui";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { listProposals } from "../../api/proposals";
-import { FeedbackState } from "../../components/FeedbackState";
 import { ProposalList } from "../../components/ProposalList";
 import { useAppPreferences } from "../../contexts/AppPreferencesContext";
 
