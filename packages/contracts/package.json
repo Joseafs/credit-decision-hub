@@ -1,0 +1,28 @@
+{
+  "name": "@credit-decision-hub/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.4.0"
+  },
+  "devDependencies": {
+    "@credit-decision-hub/typescript-config": "workspace:*",
+    "vitest": "^4.1.0"
+  }
+}

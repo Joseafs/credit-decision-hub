@@ -1,0 +1,7 @@
+{
+  "extends": "@credit-decision-hub/typescript-config/node.json",
+  "compilerOptions": {
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}
