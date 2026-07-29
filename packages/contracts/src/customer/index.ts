@@ -9,5 +9,4 @@ export {
   type CustomerIdParams,
   type CustomerListResponse,
   type ListCustomersQuery,
-} from "./customer/index.js";
-export { healthResponseSchema, type HealthResponse } from "./health/index.js";
+} from "./customer.schema.js";
