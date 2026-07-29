@@ -80,8 +80,14 @@ describe("customer routes", () => {
     });
 
     expect(response.statusCode).toBe(400);
-    expect(response.json()).toMatchObject({
+    expect(response.json()).toEqual({
       message: "Dados inválidos",
+      issues: [
+        {
+          path: "monthlyIncome",
+          message: expect.any(String),
+        },
+      ],
     });
     expect(customerService.create).not.toHaveBeenCalled();
   });

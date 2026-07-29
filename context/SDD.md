@@ -27,15 +27,16 @@ Implementado:
 - criação, listagem paginada e consulta de clientes;
 - contratos compartilhados e persistência de propostas;
 - motor de decisão, criação, listagem e consulta de propostas;
-- seed fictício de clientes e propostas.
+- seed fictício de clientes e propostas;
+- documentação OpenAPI navegável.
 
 Em execução:
 
-- Swagger / OpenAPI;
+- fluxo front-end de clientes.
 
 Não implementado:
 
-- telas de clientes e propostas;
+- telas de propostas;
 - autenticação;
 - dashboard;
 - Databricks;
@@ -430,6 +431,37 @@ A execução exige duas confirmações independentes:
 
 Bancos cujo nome identifica produção são rejeitados. Cada documento gerado recebe o metadado interno `seedKey`, oculto das consultas comuns e ausente dos contratos públicos. Uma nova execução remove somente documentos com a mesma chave e substitui clientes e propostas em uma transação. Assim, dados sem o marcador não são apagados e uma falha não deixa carga parcial.
 
+### 9.10 OpenAPI e Swagger UI
+
+A API gera uma especificação OpenAPI `3.1.0` a partir dos mesmos schemas Zod usados pelos contratos e pelas rotas.
+
+Endereços disponíveis:
+
+| Rota | Conteúdo |
+| --- | --- |
+| `/documentation/` | Interface navegável do Swagger UI |
+| `/documentation/json` | Especificação OpenAPI em JSON |
+| `/documentation/yaml` | Especificação OpenAPI em YAML |
+
+As sete operações de negócio existentes estão documentadas:
+
+- consulta de health;
+- criação, listagem e consulta de clientes;
+- criação, listagem e consulta de propostas.
+
+O adaptador Zod do Fastify é responsável por:
+
+- inferir `body`, `query` e `params` nos handlers;
+- validar as requisições com os contratos compartilhados;
+- serializar respostas conforme os schemas declarados;
+- transformar os schemas das rotas em OpenAPI.
+
+O parsing manual foi removido das rotas para evitar executar o mesmo contrato duas vezes. Um error handler compartilhado mantém o formato público de validação com `message` e `issues`.
+
+Respostas de sucesso e erros conhecidos são declarados nas próprias rotas. Exemplos OpenAPI são tipados pelos contratos e usam somente identificadores `FAKE-`, ObjectIds determinísticos e o domínio reservado `example.test`.
+
+O plugin OpenAPI é registrado antes das rotas, condição necessária para descobri-las. Rotas sem tag são ocultadas da especificação para impedir que endpoints internos do Swagger UI sejam apresentados como operações de negócio.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -491,6 +523,8 @@ Bancos cujo nome identifica produção são rejeitados. Cada documento gerado re
 | 2026-07-29 | Compartilhar somente a tradução de erros Zod para HTTP | Remover duplicação real entre rotas sem centralizar comportamentos de domínio |
 | 2026-07-29 | Reutilizar contratos e motor de decisão no seed | Manter os dados demonstrativos coerentes com o comportamento real da API |
 | 2026-07-29 | Marcar e substituir o seed em transação com autorização explícita | Permitir reexecução segura sem excluir dados externos à carga |
+| 2026-07-29 | Usar schemas Zod nas rotas como fonte da validação, tipagem e OpenAPI | Evitar contratos JSON duplicados e manter documentação alinhada ao comportamento |
+| 2026-07-29 | Documentar somente rotas explicitamente marcadas por domínio | Não expor endpoints internos do Swagger UI como operações da aplicação |
 
 ## 13. Atualização deste documento
 

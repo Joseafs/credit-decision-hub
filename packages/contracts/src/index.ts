@@ -12,6 +12,12 @@ export {
 } from "./customer/index.js";
 export { healthResponseSchema, type HealthResponse } from "./health/index.js";
 export {
+  apiErrorResponseSchema,
+  validationErrorResponseSchema,
+  type ApiErrorResponse,
+  type ValidationErrorResponse,
+} from "./shared/http-error.schema.js";
+export {
   createProposalSchema,
   listProposalsQuerySchema,
   proposalDecisionReasonCodeSchema,

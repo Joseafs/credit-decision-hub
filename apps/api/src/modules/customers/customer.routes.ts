@@ -1,11 +1,23 @@
 import {
+  apiErrorResponseSchema,
   createCustomerSchema,
   customerIdParamsSchema,
+  customerListResponseSchema,
+  customerSchema,
   listCustomersQuerySchema,
 } from "@credit-decision-hub/contracts";
-import type { FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
 
-import { toValidationErrorResponse } from "../../shared/http/validation-error.js";
+import {
+  customerConflictExample,
+  customerExample,
+  customerInputExample,
+  customerListExample,
+} from "../../shared/openapi/examples.js";
+import {
+  documentedCustomerNotFoundSchema,
+  documentedValidationErrorSchema,
+} from "../../shared/openapi/http-error.schemas.js";
 import {
   CustomerConflictError,
   CustomerNotFoundError,
@@ -16,57 +28,109 @@ type CustomerRoutesOptions = {
   customerService: CustomerService;
 };
 
-export const customerRoutes: FastifyPluginAsync<CustomerRoutesOptions> = async (
-  app,
-  { customerService },
-) => {
-  app.post("/customers", async (request, reply) => {
-    const input = createCustomerSchema.safeParse(request.body);
+const documentedCreateCustomerSchema = createCustomerSchema.meta({
+  description: "Dados do cliente fictício",
+  examples: [customerInputExample],
+});
+const documentedCustomerSchema = customerSchema.meta({
+  description: "Cliente cadastrado",
+  examples: [customerExample],
+});
+const documentedCustomerListSchema = customerListResponseSchema.meta({
+  description: "Página de clientes",
+  examples: [customerListExample],
+});
+const documentedCustomerConflictSchema = apiErrorResponseSchema.meta({
+  description: "Documento ou e-mail já cadastrado",
+  examples: [customerConflictExample],
+});
 
-    if (!input.success) {
-      return reply.status(400).send(toValidationErrorResponse(input.error));
-    }
+export const customerRoutes: FastifyPluginAsyncZod<
+  CustomerRoutesOptions
+> = async (app, { customerService }) => {
+  app.post(
+    "/customers",
+    {
+      schema: {
+        tags: ["Clientes"],
+        summary: "Cadastrar cliente",
+        description: "Cria um cliente usando somente dados fictícios.",
+        operationId: "createCustomer",
+        body: documentedCreateCustomerSchema,
+        response: {
+          201: documentedCustomerSchema,
+          400: documentedValidationErrorSchema,
+          409: documentedCustomerConflictSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const customer = await customerService.create(request.body);
 
-    try {
-      const customer = await customerService.create(input.data);
+        return reply.status(201).send(customer);
+      } catch (error) {
+        if (error instanceof CustomerConflictError) {
+          return reply.status(409).send({ message: error.message });
+        }
 
-      return reply.status(201).send(customer);
-    } catch (error) {
-      if (error instanceof CustomerConflictError) {
-        return reply.status(409).send({ message: error.message });
+        throw error;
       }
+    },
+  );
 
-      throw error;
-    }
-  });
+  app.get(
+    "/customers",
+    {
+      schema: {
+        tags: ["Clientes"],
+        summary: "Listar clientes",
+        description:
+          "Retorna clientes ordenados do mais recente ao mais antigo.",
+        operationId: "listCustomers",
+        querystring: listCustomersQuerySchema.meta({
+          examples: [{ page: 1, limit: 20 }],
+        }),
+        response: {
+          200: documentedCustomerListSchema,
+          400: documentedValidationErrorSchema,
+        },
+      },
+    },
+    async (request, reply) =>
+      reply.status(200).send(await customerService.list(request.query)),
+  );
 
-  app.get("/customers", async (request, reply) => {
-    const query = listCustomersQuerySchema.safeParse(request.query);
+  app.get(
+    "/customers/:id",
+    {
+      schema: {
+        tags: ["Clientes"],
+        summary: "Consultar cliente",
+        description: "Retorna um cliente pelo identificador.",
+        operationId: "getCustomerById",
+        params: customerIdParamsSchema.meta({
+          examples: [{ id: customerExample.id }],
+        }),
+        response: {
+          200: documentedCustomerSchema,
+          400: documentedValidationErrorSchema,
+          404: documentedCustomerNotFoundSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const customer = await customerService.getById(request.params.id);
 
-    if (!query.success) {
-      return reply.status(400).send(toValidationErrorResponse(query.error));
-    }
+        return reply.status(200).send(customer);
+      } catch (error) {
+        if (error instanceof CustomerNotFoundError) {
+          return reply.status(404).send({ message: error.message });
+        }
 
-    return reply.status(200).send(await customerService.list(query.data));
-  });
-
-  app.get("/customers/:id", async (request, reply) => {
-    const params = customerIdParamsSchema.safeParse(request.params);
-
-    if (!params.success) {
-      return reply.status(400).send(toValidationErrorResponse(params.error));
-    }
-
-    try {
-      const customer = await customerService.getById(params.data.id);
-
-      return reply.status(200).send(customer);
-    } catch (error) {
-      if (error instanceof CustomerNotFoundError) {
-        return reply.status(404).send({ message: error.message });
+        throw error;
       }
-
-      throw error;
-    }
-  });
+    },
+  );
 };
