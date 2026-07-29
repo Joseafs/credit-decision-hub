@@ -52,6 +52,9 @@ export const proposalDecisionReasonMessages: Record<
   high_amount: "Valor solicitado exige análise manual",
   medium_risk: "Proposta classificada como risco médio",
   eligible: "Critérios automáticos atendidos",
+  manual_approval: "Proposta aprovada manualmente",
+  manual_rejection: "Proposta reprovada manualmente",
+  manual_review_requested: "Proposta encaminhada para análise manual",
 };
 
 const roundToTwoDecimalPlaces = (value: number): number =>

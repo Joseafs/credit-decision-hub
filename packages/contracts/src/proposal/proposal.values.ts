@@ -24,6 +24,9 @@ export const proposalDecisionReasonCodeValues = [
   "high_amount",
   "medium_risk",
   "eligible",
+  "manual_approval",
+  "manual_rejection",
+  "manual_review_requested",
 ] as const;
 
 export const proposalHistoryActorTypeValues = ["system", "analyst"] as const;

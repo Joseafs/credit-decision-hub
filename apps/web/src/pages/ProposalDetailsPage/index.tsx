@@ -5,6 +5,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 
 import { getProposal } from "../../api/proposals";
 import { ProposalStatusBadge } from "../../components/ProposalStatusBadge";
+import { ManualProposalDecision } from "../../components/ManualProposalDecision";
 import { useAppPreferences } from "../../contexts/AppPreferencesContext";
 import {
   formatCurrency,
@@ -231,6 +232,13 @@ export const ProposalDetailsPage = () => {
           </p>
         </article>
       </div>
+
+      <ManualProposalDecision
+        onDecided={(updatedProposal) =>
+          setProposalState({ status: "success", proposal: updatedProposal })
+        }
+        proposal={proposal}
+      />
 
       <article className="mt-5 rounded-2xl border border-border bg-surface p-6 sm:p-8">
         <h2 className="text-xl font-semibold text-heading">

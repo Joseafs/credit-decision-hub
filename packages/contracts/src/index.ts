@@ -12,6 +12,12 @@ export {
 } from "./customer/index.js";
 export { healthResponseSchema, type HealthResponse } from "./health/index.js";
 export {
+  authSessionSchema,
+  loginSchema,
+  type AuthSession,
+  type LoginInput,
+} from "./auth/index.js";
+export {
   apiErrorResponseSchema,
   validationErrorResponseSchema,
   type ApiErrorResponse,
@@ -20,6 +26,7 @@ export {
 export {
   createProposalSchema,
   listProposalsQuerySchema,
+  manualProposalDecisionSchema,
   proposalDecisionReasonCodeSchema,
   proposalDecisionReasonCodeValues,
   proposalFraudSignalSchema,
@@ -36,6 +43,7 @@ export {
   proposalStatusValues,
   type CreateProposalInput,
   type ListProposalsQuery,
+  type ManualProposalDecisionInput,
   type Proposal,
   type ProposalDecisionReasonCode,
   type ProposalFraudSignal,
@@ -46,3 +54,13 @@ export {
   type ProposalRiskLevel,
   type ProposalStatus,
 } from "./proposal/index.js";
+export {
+  createUserSchema,
+  userListResponseSchema,
+  userRoleSchema,
+  userRoleValues,
+  userSchema,
+  type CreateUserInput,
+  type User,
+  type UserRole,
+} from "./user/index.js";

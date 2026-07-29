@@ -41,6 +41,9 @@ export const proposalReasonTranslationKeys: Record<
   high_amount: "proposal.reason.highAmount",
   medium_risk: "proposal.reason.mediumRisk",
   eligible: "proposal.reason.eligible",
+  manual_approval: "proposal.reason.manualApproval",
+  manual_rejection: "proposal.reason.manualRejection",
+  manual_review_requested: "proposal.reason.manualReviewRequested",
 };
 
 export const proposalFraudSignalTranslationKeys: Record<

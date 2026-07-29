@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 
 import { useAppPreferences } from "../../contexts/AppPreferencesContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   [
@@ -11,6 +12,7 @@ const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
   ].join(" ");
 
 export const AppHeader = () => {
+  const { signOut, user } = useAuth();
   const { locale, setLocale, theme, toggleTheme, translate } =
     useAppPreferences();
 
@@ -45,6 +47,11 @@ export const AppHeader = () => {
             <NavLink className={navLinkClassName} to="/proposals">
               {translate("nav.proposals")}
             </NavLink>
+            {user?.role === "admin" && (
+              <NavLink className={navLinkClassName} to="/users">
+                {translate("nav.users")}
+              </NavLink>
+            )}
           </nav>
 
           <div
@@ -84,6 +91,27 @@ export const AppHeader = () => {
           >
             <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
           </button>
+          {user && (
+            <div className="hidden text-right text-xs sm:block">
+              <p className="font-semibold text-heading">{user.name}</p>
+              <p className="text-muted">
+                {translate(
+                  user.role === "admin"
+                    ? "auth.role.admin"
+                    : "auth.role.analyst",
+                )}
+              </p>
+            </div>
+          )}
+          {user && (
+            <button
+              className="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-semibold text-heading hover:border-primary"
+              onClick={() => void signOut()}
+              type="button"
+            >
+              {translate("auth.logout")}
+            </button>
+          )}
         </div>
       </div>
     </header>

@@ -32,9 +32,23 @@ const environmentSchema = z
       ),
     MONGODB_DATABASE: z.string().trim().min(1).default("credit-decision-hub"),
     MONGODB_DNS_SERVERS: dnsServersSchema,
+    AUTH_JWT_SECRET: z.string().min(32),
+    AUTH_SECURE_COOKIE: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((value) => value === "true"),
   })
   .transform(
-    ({ MONGODB_DATABASE, MONGODB_DNS_SERVERS, MONGODB_URI, PORT }) => ({
+    ({
+      AUTH_JWT_SECRET,
+      AUTH_SECURE_COOKIE,
+      MONGODB_DATABASE,
+      MONGODB_DNS_SERVERS,
+      MONGODB_URI,
+      PORT,
+    }) => ({
+      authJwtSecret: AUTH_JWT_SECRET,
+      authSecureCookie: AUTH_SECURE_COOKIE,
       dnsServers: MONGODB_DNS_SERVERS,
       port: PORT,
       mongodbDatabase: MONGODB_DATABASE,

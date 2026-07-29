@@ -5,6 +5,12 @@ export class ProposalNotFoundError extends Error {
   }
 }
 
+export class InvalidProposalTransitionError extends Error {
+  constructor() {
+    super("A transição de status solicitada não é permitida");
+  }
+}
+
 export class ProposalCustomerNotFoundError extends Error {
   constructor() {
     super("Cliente não encontrado");

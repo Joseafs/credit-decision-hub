@@ -248,6 +248,13 @@ Perfis iniciais:
 - administrador;
 - analista.
 
+Permissões aprovadas:
+
+- administradores e analistas podem consultar e cadastrar clientes, criar propostas e registrar decisões manuais permitidas;
+- somente administradores podem listar usuários e cadastrar novos analistas;
+- o primeiro administrador deve ser criado por bootstrap explícito, nunca por uma rota pública;
+- usuários anônimos acessam somente health, documentação e autenticação.
+
 ### Cliente
 
 Campos iniciais:
@@ -448,6 +455,7 @@ Testar:
 - validar todas as entradas;
 - não registrar senhas ou tokens em logs;
 - armazenar senhas com hash quando autenticação for implementada;
+- manter o JWT de sessão em cookie `HttpOnly`, sem expô-lo ao JavaScript do navegador;
 - manter trilha de auditoria das decisões.
 
 ## 14. Arquitetura de hospedagem prevista

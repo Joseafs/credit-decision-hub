@@ -154,6 +154,13 @@ export const proposalListResponseSchema = z
   })
   .strict();
 
+export const manualProposalDecisionSchema = z
+  .object({
+    status: z.enum(["approved", "rejected", "manual_review"]),
+    reason: z.string().trim().min(3).max(240),
+  })
+  .strict();
+
 export type ProposalRiskLevel = z.infer<typeof proposalRiskLevelSchema>;
 export type ProposalFraudSignal = z.infer<typeof proposalFraudSignalSchema>;
 export type CreateProposalInput = z.infer<typeof createProposalSchema>;
@@ -161,3 +168,6 @@ export type Proposal = z.infer<typeof proposalSchema>;
 export type ProposalIdParams = z.infer<typeof proposalIdParamsSchema>;
 export type ListProposalsQuery = z.infer<typeof listProposalsQuerySchema>;
 export type ProposalListResponse = z.infer<typeof proposalListResponseSchema>;
+export type ManualProposalDecisionInput = z.infer<
+  typeof manualProposalDecisionSchema
+>;

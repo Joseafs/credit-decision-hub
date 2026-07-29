@@ -62,6 +62,7 @@ const proposal: Proposal = {
 
 const proposalService: ProposalService = {
   create: vi.fn(async () => proposal),
+  decide: vi.fn(async () => proposal),
   getById: vi.fn(async () => proposal),
   list: vi.fn(async ({ page, limit }) => ({
     data: [proposal],

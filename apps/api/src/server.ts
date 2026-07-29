@@ -6,12 +6,17 @@ import {
 } from "./database/mongodb.js";
 
 const startServer = async (): Promise<void> => {
-  const app = buildApp({ logger: true });
+  loadEnvironmentFiles();
+  const environment = readEnvironment();
+  const app = buildApp({
+    logger: true,
+    authentication: {
+      secret: environment.authJwtSecret,
+      secureCookie: environment.authSecureCookie,
+    },
+  });
 
   try {
-    loadEnvironmentFiles();
-    const environment = readEnvironment();
-
     await connectToDatabase({
       databaseName: environment.mongodbDatabase,
       dnsServers: environment.dnsServers,

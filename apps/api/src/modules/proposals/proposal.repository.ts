@@ -3,6 +3,8 @@ import {
   type ListProposalsQuery,
   type Proposal,
   type ProposalHistory,
+  type ProposalDecisionReasonCode,
+  type ProposalStatus,
 } from "@credit-decision-hub/contracts";
 import mongoose, { type HydratedDocument } from "mongoose";
 
@@ -29,6 +31,15 @@ export type ProposalRepository = {
   create(input: ProposalToCreate): Promise<Proposal>;
   findById(id: string): Promise<Proposal | null>;
   findPage(query: ListProposalsQuery): Promise<ProposalPage>;
+  updateDecision(input: {
+    id: string;
+    expectedStatus: ProposalStatus;
+    status: ProposalStatus;
+    reasonCode: ProposalDecisionReasonCode;
+    reason: string;
+    actorId: string;
+    createdAt: string;
+  }): Promise<Proposal | null>;
 };
 
 export const toProposal = (
@@ -137,5 +148,31 @@ export const proposalRepository: ProposalRepository = {
       data: proposals.map(toProposal),
       total,
     };
+  },
+  async updateDecision(input) {
+    const proposal = await ProposalModel.findOneAndUpdate(
+      { _id: input.id, status: input.expectedStatus },
+      {
+        $set: {
+          status: input.status,
+          decisionReasonCode: input.reasonCode,
+          decisionReason: input.reason,
+          assignedAnalystId: input.actorId,
+        },
+        $push: {
+          history: {
+            fromStatus: input.expectedStatus,
+            toStatus: input.status,
+            reasonCode: input.reasonCode,
+            reason: input.reason,
+            actorType: "analyst",
+            actorId: input.actorId,
+            createdAt: new Date(input.createdAt),
+          },
+        },
+      },
+      { new: true, runValidators: true },
+    ).exec();
+    return proposal ? toProposal(proposal) : null;
   },
 };

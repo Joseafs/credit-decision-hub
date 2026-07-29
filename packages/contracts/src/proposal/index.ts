@@ -11,6 +11,7 @@ export {
 export {
   createProposalSchema,
   listProposalsQuerySchema,
+  manualProposalDecisionSchema,
   proposalFraudSignalSchema,
   proposalIdParamsSchema,
   proposalListResponseSchema,
@@ -18,6 +19,7 @@ export {
   proposalSchema,
   type CreateProposalInput,
   type ListProposalsQuery,
+  type ManualProposalDecisionInput,
   type Proposal,
   type ProposalFraudSignal,
   type ProposalIdParams,

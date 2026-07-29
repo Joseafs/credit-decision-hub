@@ -3,8 +3,13 @@ import { describe, expect, test } from "vitest";
 import { readEnvironment } from "./env.js";
 
 describe("readEnvironment", () => {
+  const authEnvironment = {
+    AUTH_JWT_SECRET: "test-secret-with-at-least-32-characters",
+  };
+
   test("should parse the MongoDB configuration", () => {
     const environment = readEnvironment({
+      ...authEnvironment,
       MONGODB_URI: "mongodb+srv://user:password@example.mongodb.net/",
       MONGODB_DATABASE: "credit-test",
       MONGODB_DNS_SERVERS: "8.8.8.8, 8.8.4.4",
@@ -12,6 +17,8 @@ describe("readEnvironment", () => {
     });
 
     expect(environment).toEqual({
+      authJwtSecret: authEnvironment.AUTH_JWT_SECRET,
+      authSecureCookie: false,
       dnsServers: ["8.8.8.8", "8.8.4.4"],
       mongodbDatabase: "credit-test",
       mongodbUri: "mongodb+srv://user:password@example.mongodb.net/",
@@ -21,6 +28,7 @@ describe("readEnvironment", () => {
 
   test("should apply safe defaults for optional variables", () => {
     const environment = readEnvironment({
+      ...authEnvironment,
       MONGODB_URI: "mongodb://localhost:27017",
     });
 
@@ -32,6 +40,7 @@ describe("readEnvironment", () => {
   test("should reject an invalid MongoDB URI", () => {
     expect(() =>
       readEnvironment({
+        ...authEnvironment,
         MONGODB_URI: "https://example.com",
       }),
     ).toThrow("MONGODB_URI deve ser uma URI válida do MongoDB");
@@ -40,6 +49,7 @@ describe("readEnvironment", () => {
   test("should reject an invalid DNS server", () => {
     expect(() =>
       readEnvironment({
+        ...authEnvironment,
         MONGODB_URI: "mongodb://localhost:27017",
         MONGODB_DNS_SERVERS: "invalid-server",
       }),

@@ -2,6 +2,7 @@ import {
   apiErrorResponseSchema,
   createProposalSchema,
   listProposalsQuerySchema,
+  manualProposalDecisionSchema,
   proposalIdParamsSchema,
   proposalListResponseSchema,
   proposalSchema,
@@ -19,6 +20,7 @@ import {
   documentedValidationErrorSchema,
 } from "../../shared/openapi/http-error.schemas.js";
 import {
+  InvalidProposalTransitionError,
   ProposalCustomerNotFoundError,
   ProposalNotFoundError,
 } from "./proposal.errors.js";
@@ -26,6 +28,7 @@ import type { ProposalService } from "./proposal.service.js";
 
 type ProposalRoutesOptions = {
   proposalService: ProposalService;
+  protectedRoutes?: boolean;
 };
 
 const documentedCreateProposalSchema = createProposalSchema.meta({
@@ -47,10 +50,11 @@ const documentedProposalNotFoundSchema = apiErrorResponseSchema.meta({
 
 export const proposalRoutes: FastifyPluginAsyncZod<
   ProposalRoutesOptions
-> = async (app, { proposalService }) => {
+> = async (app, { proposalService, protectedRoutes = false }) => {
   app.post(
     "/proposals",
     {
+      ...(protectedRoutes ? { onRequest: app.authenticate } : {}),
       schema: {
         tags: ["Propostas"],
         summary: "Criar e avaliar proposta",
@@ -83,6 +87,7 @@ export const proposalRoutes: FastifyPluginAsyncZod<
   app.get(
     "/proposals",
     {
+      ...(protectedRoutes ? { onRequest: app.authenticate } : {}),
       schema: {
         tags: ["Propostas"],
         summary: "Listar propostas",
@@ -112,6 +117,7 @@ export const proposalRoutes: FastifyPluginAsyncZod<
   app.get(
     "/proposals/:id",
     {
+      ...(protectedRoutes ? { onRequest: app.authenticate } : {}),
       schema: {
         tags: ["Propostas"],
         summary: "Consultar proposta",
@@ -137,6 +143,49 @@ export const proposalRoutes: FastifyPluginAsyncZod<
           return reply.status(404).send({ message: error.message });
         }
 
+        throw error;
+      }
+    },
+  );
+
+  app.patch(
+    "/proposals/:id/decision",
+    {
+      ...(protectedRoutes
+        ? { onRequest: app.authorize(["admin", "analyst"]) }
+        : {}),
+      schema: {
+        tags: ["Propostas"],
+        summary: "Registrar decisão manual",
+        operationId: "decideProposal",
+        params: proposalIdParamsSchema,
+        body: manualProposalDecisionSchema,
+        response: {
+          200: documentedProposalSchema,
+          400: documentedValidationErrorSchema,
+          404: documentedProposalNotFoundSchema,
+          409: apiErrorResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        return reply
+          .status(200)
+          .send(
+            await proposalService.decide(
+              request.params.id,
+              request.body,
+              request.currentUser.id,
+            ),
+          );
+      } catch (error) {
+        if (error instanceof ProposalNotFoundError) {
+          return reply.status(404).send({ message: error.message });
+        }
+        if (error instanceof InvalidProposalTransitionError) {
+          return reply.status(409).send({ message: error.message });
+        }
         throw error;
       }
     },

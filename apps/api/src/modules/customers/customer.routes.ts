@@ -26,6 +26,7 @@ import type { CustomerService } from "./customer.service.js";
 
 type CustomerRoutesOptions = {
   customerService: CustomerService;
+  protectedRoutes?: boolean;
 };
 
 const documentedCreateCustomerSchema = createCustomerSchema.meta({
@@ -47,10 +48,11 @@ const documentedCustomerConflictSchema = apiErrorResponseSchema.meta({
 
 export const customerRoutes: FastifyPluginAsyncZod<
   CustomerRoutesOptions
-> = async (app, { customerService }) => {
+> = async (app, { customerService, protectedRoutes = false }) => {
   app.post(
     "/customers",
     {
+      ...(protectedRoutes ? { onRequest: app.authenticate } : {}),
       schema: {
         tags: ["Clientes"],
         summary: "Cadastrar cliente",
@@ -82,6 +84,7 @@ export const customerRoutes: FastifyPluginAsyncZod<
   app.get(
     "/customers",
     {
+      ...(protectedRoutes ? { onRequest: app.authenticate } : {}),
       schema: {
         tags: ["Clientes"],
         summary: "Listar clientes",
@@ -104,6 +107,7 @@ export const customerRoutes: FastifyPluginAsyncZod<
   app.get(
     "/customers/:id",
     {
+      ...(protectedRoutes ? { onRequest: app.authenticate } : {}),
       schema: {
         tags: ["Clientes"],
         summary: "Consultar cliente",

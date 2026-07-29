@@ -33,15 +33,15 @@ Implementado:
 - fluxo front-end de criação, listagem paginada e consulta de propostas;
 - biblioteca de componentes genéricos e catálogo Storybook;
 - filtros de propostas e paginação de listagens sincronizados com a URL;
+- autenticação, autorização por papel, gestão de analistas e decisões manuais;
 - temas claro e escuro e interface em PT-BR e inglês.
 
 Em execução:
 
-- definição de autenticação e permissões.
+- dashboard e auditoria.
 
 Não implementado:
 
-- autenticação;
 - dashboard;
 - Databricks;
 - infraestrutura e CI/CD.
@@ -562,6 +562,30 @@ Regras de navegação:
 - um resultado vazio com filtros oferece a limpeza da consulta;
 - datas informadas na interface representam o início e o fim do dia em UTC no contrato HTTP.
 
+## 9.15 Autenticação, usuários e decisões manuais
+
+A autenticação usa e-mail e senha. Senhas são derivadas com `scrypt`, salt aleatório e comparação em tempo constante usando somente `node:crypto`. O valor original nunca é persistido ou registrado.
+
+A API assina um JWT com validade de oito horas e o entrega no cookie `cdh_session`, configurado com `HttpOnly`, `SameSite=Lax`, escopo `/` e `Secure` nos ambientes HTTPS. O front-end não lê nem persiste o token: restaura a identidade por `GET /auth/session` e envia o cookie automaticamente.
+
+O middleware de autenticação verifica o JWT e consulta o usuário ativo a cada requisição protegida. Assim, um usuário desativado perde acesso mesmo que seu token ainda não tenha expirado. Health, Swagger e login permanecem públicos; clientes, propostas e usuários exigem sessão.
+
+Papéis:
+
+- `analyst` e `admin` operam clientes, propostas e decisões manuais;
+- somente `admin` lista usuários e cadastra analistas;
+- não existe cadastro público;
+- o primeiro administrador é criado uma única vez por `pnpm --filter @credit-decision-hub/api bootstrap:admin`, com identidade e senha recebidas apenas por variáveis locais.
+
+Transições manuais implementadas:
+
+- `manual_review` para `approved` ou `rejected`;
+- `fraud_suspected` para `manual_review` ou `rejected`.
+
+Estados finais não podem ser alterados. Cada decisão exige justificativa, atualiza o responsável atribuído e acrescenta ao histórico um evento `analyst` com o identificador obtido da sessão. A atualização usa o status anterior como condição, impedindo que duas decisões concorrentes sobrescrevam silenciosamente uma à outra.
+
+No front-end, a sessão usa Context API porque identidade e permissões são estados globais simples. Rotas privadas aguardam a restauração da sessão; usuários anônimos são enviados ao login e analistas não acessam a gestão de usuários.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -635,6 +659,11 @@ Regras de navegação:
 | 2026-07-29 | Adicionar componentes ao design system somente com reuso concreto | Evitar transformar toda implementação visual em abstração compartilhada |
 | 2026-07-29 | Usar a URL como fonte do estado de paginação e filtros | Preservar consultas na navegação, permitir compartilhamento e evitar estado global desnecessário |
 | 2026-07-29 | Expor na interface somente filtros suportados e amigáveis | Reutilizar os contratos sem criar busca local ou apresentar identificadores técnicos como experiência final |
+| 2026-07-29 | Manter JWT de oito horas em cookie `HttpOnly` | Reduzir exposição do token ao JavaScript e permitir restauração segura da sessão |
+| 2026-07-29 | Usar `scrypt` nativo para derivar senhas | Evitar senha reversível e dependência adicional sem reduzir a proteção necessária |
+| 2026-07-29 | Consultar o usuário ativo em cada requisição autenticada | Fazer desativação e remoção de acesso prevalecerem sobre um token ainda válido |
+| 2026-07-29 | Restringir gestão de usuários ao administrador | Criar uma diferença objetiva de autorização sem antecipar funções de dashboard |
+| 2026-07-29 | Registrar decisões manuais com identidade da sessão e atualização condicional | Preservar autoria, histórico e concorrência da decisão |
 
 ## 13. Atualização deste documento
 

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "bootstrap:admin": "tsx src/database/bootstrap-admin.ts",
     "dev": "tsx watch src/server.ts",
     "lint": "eslint .",
     "seed": "tsx src/database/seed/seed.ts",
@@ -14,6 +15,8 @@
   },
   "dependencies": {
     "@credit-decision-hub/contracts": "workspace:*",
+    "@fastify/cookie": "^11.1.2",
+    "@fastify/jwt": "^10.2.1",
     "@fastify/swagger": "^9.8.1",
     "@fastify/swagger-ui": "^6.1.1",
     "fastify": "^5.10.0",

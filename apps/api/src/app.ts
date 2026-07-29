@@ -20,13 +20,26 @@ import {
   createProposalService,
   type ProposalService,
 } from "./modules/proposals/proposal.service.js";
+import { authRoutes } from "./modules/users/auth.routes.js";
+import { userRepository } from "./modules/users/user.repository.js";
+import { userRoutes } from "./modules/users/user.routes.js";
+import {
+  createUserService,
+  type UserService,
+} from "./modules/users/user.service.js";
 import { healthRoute } from "./routes/health/health.route.js";
+import { registerAuthentication } from "./shared/auth/auth.plugin.js";
 import { toValidationErrorResponse } from "./shared/http/validation-error.js";
 import { registerOpenApi } from "./shared/openapi/openapi.js";
 
 type BuildAppOptions = FastifyServerOptions & {
   customerService?: CustomerService;
   proposalService?: ProposalService;
+  authentication?: {
+    secret: string;
+    secureCookie: boolean;
+    userService?: UserService;
+  };
 };
 
 export const buildApp = ({
@@ -35,6 +48,7 @@ export const buildApp = ({
     customerReader: customerRepository,
     repository: proposalRepository,
   }),
+  authentication,
   ...fastifyOptions
 }: BuildAppOptions = {}): FastifyInstance => {
   const app = Fastify(fastifyOptions);
@@ -53,8 +67,33 @@ export const buildApp = ({
 
   registerOpenApi(app);
   app.register(healthRoute);
-  app.register(customerRoutes, { customerService });
-  app.register(proposalRoutes, { proposalService });
+
+  if (authentication) {
+    const userService =
+      authentication.userService ?? createUserService(userRepository);
+    app.register(async (scope) => {
+      await registerAuthentication(scope, {
+        secret: authentication.secret,
+        userService,
+      });
+      scope.register(authRoutes, {
+        secureCookie: authentication.secureCookie,
+        userService,
+      });
+      scope.register(userRoutes, { userService });
+      scope.register(customerRoutes, {
+        customerService,
+        protectedRoutes: true,
+      });
+      scope.register(proposalRoutes, {
+        proposalService,
+        protectedRoutes: true,
+      });
+    });
+  } else {
+    app.register(customerRoutes, { customerService });
+    app.register(proposalRoutes, { proposalService });
+  }
 
   return app;
 };

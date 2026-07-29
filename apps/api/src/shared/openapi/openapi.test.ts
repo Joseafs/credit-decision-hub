@@ -21,6 +21,7 @@ const documentedOperationIds = [
   "createProposal",
   "listProposals",
   "getProposalById",
+  "decideProposal",
 ];
 
 const getOperationIds = (document: OpenAPIV3_1.Document): string[] =>
@@ -69,6 +70,7 @@ describe("OpenAPI documentation", () => {
       "/health",
       "/proposals",
       "/proposals/{id}",
+      "/proposals/{id}/decision",
     ]);
     expect(getOperationIds(document).sort()).toEqual(
       [...documentedOperationIds].sort(),

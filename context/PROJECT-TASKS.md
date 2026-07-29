@@ -33,10 +33,9 @@ As decisões de produto pertencem ao [`README.md`](./README.md). As decisões t�
 
 | Ordem | ID | Fase | Estado | Entrega |
 | --- | --- | --- | --- | --- |
-| 1 | `CDH-012` | 4 | `ACTIVE` | Definir e implementar autenticação e permissões |
-| 2 | `CDH-013` | 4 | `NEXT` | Implementar dashboard e auditoria |
-| 3 | `CDH-014` | 5 | `PLANNED` | Implementar etapa analítica com Databricks |
-| 4 | `CDH-015` | 6 | `PLANNED` | Implementar infraestrutura, CI/CD e deploy |
+| 1 | `CDH-013` | 4 | `ACTIVE` | Implementar dashboard e auditoria |
+| 2 | `CDH-014` | 5 | `NEXT` | Implementar etapa analítica com Databricks |
+| 3 | `CDH-015` | 6 | `PLANNED` | Implementar infraestrutura, CI/CD e deploy |
 
 Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados somente quando se tornarem próximos, evitando especificação prematura.
 
@@ -44,25 +43,25 @@ Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados 
 
 ## 5. Tarefa ativa
 
-### `CDH-012` — Autenticação e permissões
+### `CDH-013` — Dashboard e auditoria
 
-Objetivo: definir a identidade, os papéis e as permissões antes de implementar transições manuais ou áreas protegidas.
+Objetivo: apresentar indicadores operacionais e tornar a trilha de ações autenticadas consultável.
 
 Entregas:
 
-- detalhar atores, papéis e limites de autorização;
-- definir contratos de autenticação e sessão;
-- escolher a estratégia técnica após registrar os requisitos;
-- proteger rotas e operações conforme os papéis aprovados;
-- habilitar transições manuais somente com identidade autenticada.
+- definir indicadores úteis antes de escolher visualizações;
+- implementar agregações operacionais na API;
+- apresentar dashboard conforme o papel autenticado;
+- permitir consulta de auditoria das ações manuais;
+- adicionar gráficos somente quando melhorarem a leitura.
 
 ## 6. Próxima tarefa
 
-### `CDH-013` — Dashboard e auditoria
+### `CDH-014` — Etapa analítica com Databricks
 
-- detalhar indicadores operacionais depois que identidade e permissões estiverem implementadas;
-- apresentar histórico e auditoria conforme o usuário autenticado;
-- adicionar gráficos somente quando melhorarem a leitura dos indicadores.
+- definir o contrato de exportação do dataset fictício;
+- criar processamento analítico sem substituir o MongoDB operacional;
+- integrar resultados somente depois de existir uma saída reproduzível.
 
 ## 7. Entregas concluídas
 
@@ -79,14 +78,15 @@ Entregas:
 | `CDH-009` | Fluxo front-end de clientes | `feat(web): implementar fluxo de clientes (CDH-009)` | 108 testes, cadastro, listagem, detalhe, paginação, temas, dois idiomas, acesso direto e integração real validados |
 | `CDH-010` | Fluxo front-end de propostas | `feat(web): implementar fluxo de propostas (CDH-010)` | 122 testes, criação, listagem, detalhe, histórico, paginação, dois idiomas, temas e integração read-only com o Atlas validados |
 | `CDH-011` | Filtros e estados de navegação | `feat(web): implementar filtros de propostas (CDH-011)` | 132 testes, parâmetros compartilhados, URL navegável, paginação preservada, estados vazios e inspeção real em dois idiomas e temas |
+| `CDH-012` | Autenticação e permissões | `feat(auth): implementar autenticação e permissões (CDH-012)` | 144 testes, JWT HttpOnly, scrypt, papéis, bootstrap, rotas protegidas, gestão de analistas e decisões manuais validados |
 | `CDH-016` | Design system e Storybook | `feat(ui): criar design system com Storybook (CDH-016)` | 127 testes, três componentes compartilhados, temas centralizados, catálogo estático e inspeção visual aprovados |
 
 ## 8. Handoff atual
 
 - branch: `main`;
-- última tarefa concluída: `CDH-011`;
-- tarefa ativa: `CDH-012`;
-- próxima implementação: definição de autenticação e permissões;
+- última tarefa concluída: `CDH-012`;
+- tarefa ativa: `CDH-013`;
+- próxima implementação: definição dos indicadores e da auditoria;
 - bloqueios: nenhum;
 - push: não realizado nesta entrega.
 

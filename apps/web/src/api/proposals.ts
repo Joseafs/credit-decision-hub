@@ -1,10 +1,12 @@
 import {
   createProposalSchema,
   listProposalsQuerySchema,
+  manualProposalDecisionSchema,
   proposalListResponseSchema,
   proposalSchema,
   type CreateProposalInput,
   type ListProposalsQuery,
+  type ManualProposalDecisionInput,
   type Proposal,
   type ProposalListResponse,
 } from "@credit-decision-hub/contracts";
@@ -91,4 +93,14 @@ export const createProposal = (input: CreateProposalInput): Promise<Proposal> =>
       "Content-Type": "application/json",
     },
     body: JSON.stringify(createProposalSchema.parse(input)),
+  });
+
+export const decideProposal = (
+  proposalId: string,
+  input: ManualProposalDecisionInput,
+): Promise<Proposal> =>
+  requestJson(`/api/proposals/${proposalId}/decision`, proposalSchema, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(manualProposalDecisionSchema.parse(input)),
   });

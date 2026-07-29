@@ -3,11 +3,13 @@ import {
   type CreateProposalInput,
   type Customer,
   type ListProposalsQuery,
+  type ManualProposalDecisionInput,
   type Proposal,
   type ProposalListResponse,
 } from "@credit-decision-hub/contracts";
 
 import {
+  InvalidProposalTransitionError,
   ProposalCustomerNotFoundError,
   ProposalNotFoundError,
 } from "./proposal.errors.js";
@@ -28,6 +30,11 @@ export type ProposalService = {
   create(input: CreateProposalInput): Promise<Proposal>;
   getById(id: string): Promise<Proposal>;
   list(query: ListProposalsQuery): Promise<ProposalListResponse>;
+  decide(
+    id: string,
+    input: ManualProposalDecisionInput,
+    actorId: string,
+  ): Promise<Proposal>;
 };
 
 type ProposalServiceDependencies = {
@@ -104,5 +111,37 @@ export const createProposalService = ({
         totalPages: Math.ceil(page.total / query.limit),
       },
     });
+  },
+
+  async decide(id, input, actorId) {
+    const proposal = await repository.findById(id);
+    if (!proposal) throw new ProposalNotFoundError();
+
+    const allowedTransitions: Partial<
+      Record<Proposal["status"], Proposal["status"][]>
+    > = {
+      manual_review: ["approved", "rejected"],
+      fraud_suspected: ["manual_review", "rejected"],
+    };
+    if (!allowedTransitions[proposal.status]?.includes(input.status)) {
+      throw new InvalidProposalTransitionError();
+    }
+
+    const reasonCodes = {
+      approved: "manual_approval",
+      rejected: "manual_rejection",
+      manual_review: "manual_review_requested",
+    } as const;
+    const updated = await repository.updateDecision({
+      id,
+      expectedStatus: proposal.status,
+      status: input.status,
+      reasonCode: reasonCodes[input.status],
+      reason: input.reason,
+      actorId,
+      createdAt: now().toISOString(),
+    });
+    if (!updated) throw new InvalidProposalTransitionError();
+    return updated;
   },
 });

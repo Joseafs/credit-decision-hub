@@ -42,6 +42,7 @@ export const requestJson = async <Output>(
   init?: RequestInit,
 ): Promise<Output> => {
   const response = await fetch(path, {
+    credentials: "same-origin",
     ...init,
     headers: {
       Accept: "application/json",

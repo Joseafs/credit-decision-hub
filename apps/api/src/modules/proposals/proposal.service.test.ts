@@ -5,6 +5,7 @@ import type {
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import {
+  InvalidProposalTransitionError,
   ProposalCustomerNotFoundError,
   ProposalNotFoundError,
 } from "./proposal.errors.js";
@@ -68,6 +69,7 @@ const createRepositoryMock = (): ProposalRepository => ({
     data: [proposal],
     total: 1,
   })),
+  updateDecision: vi.fn(async () => proposal),
 });
 
 const createCustomerReaderMock = (): ProposalCustomerReader => ({
@@ -182,5 +184,49 @@ describe("proposal service", () => {
         totalPages: 3,
       },
     });
+  });
+
+  test("should record an allowed manual decision with the authenticated actor", async () => {
+    const reviewProposal = { ...proposal, status: "manual_review" as const };
+    vi.mocked(repository.findById).mockResolvedValue(reviewProposal);
+    vi.mocked(repository.updateDecision).mockResolvedValue({
+      ...reviewProposal,
+      status: "approved",
+      decisionReasonCode: "manual_approval",
+      decisionReason: "Documentação revisada",
+    });
+    const service = createProposalService({
+      customerReader,
+      repository,
+      now: () => new Date(occurredAt),
+    });
+
+    await service.decide(
+      proposal.id,
+      { status: "approved", reason: "Documentação revisada" },
+      "507f1f77bcf86cd799439099",
+    );
+
+    expect(repository.updateDecision).toHaveBeenCalledWith({
+      id: proposal.id,
+      expectedStatus: "manual_review",
+      status: "approved",
+      reasonCode: "manual_approval",
+      reason: "Documentação revisada",
+      actorId: "507f1f77bcf86cd799439099",
+      createdAt: occurredAt,
+    });
+  });
+
+  test("should reject a manual decision from a final status", async () => {
+    const service = createProposalService({ customerReader, repository });
+    await expect(
+      service.decide(
+        proposal.id,
+        { status: "rejected", reason: "Tentativa inválida" },
+        "507f1f77bcf86cd799439099",
+      ),
+    ).rejects.toBeInstanceOf(InvalidProposalTransitionError);
+    expect(repository.updateDecision).not.toHaveBeenCalled();
   });
 });
