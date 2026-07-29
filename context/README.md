@@ -420,7 +420,130 @@ Testar:
 - armazenar senhas com hash quando autenticação for implementada;
 - manter trilha de auditoria das decisões.
 
-## 14. Entrega incremental
+## 14. Arquitetura de hospedagem prevista
+
+Esta seção registra somente a decisão arquitetural. Nenhum serviço de deploy deve ser configurado antes da Fase 6.
+
+```txt
+GitHub
+├── Vercel        → front-end React (apps/web)
+├── Render Free   → API Node.js/Fastify (apps/api)
+└── MongoDB Atlas → banco de dados MongoDB
+```
+
+Responsabilidades:
+
+- GitHub mantém o código-fonte e integra os provedores de deploy;
+- Vercel hospeda os arquivos estáticos gerados pelo front-end Vite;
+- Render executa a API Fastify como Web Service;
+- MongoDB Atlas permanece como banco operacional e não depende do sistema de arquivos do Render.
+
+### 14.1 Escolha do Render Free
+
+O projeto é destinado exclusivamente a:
+
+- estudo;
+- testes;
+- portfólio;
+- demonstrações esporádicas;
+- baixo volume de acessos.
+
+O Render Free foi escolhido para a API por oferecer:
+
+- instância gratuita de Web Service adequada a testes e projetos pessoais;
+- integração com GitHub e deploy automático;
+- suporte a aplicações Node.js e Fastify;
+- logs acessíveis;
+- HTTPS com certificado TLS gerenciado;
+- suspensão automática quando o serviço fica sem uso;
+- operação sem depender de um pequeno crédito financeiro mensal.
+
+Essa escolha não qualifica o plano gratuito para produção. O próprio Render recomenda instâncias gratuitas para testes, projetos pessoais e avaliação da plataforma.
+
+Limitações aceitas:
+
+- o serviço gratuito entra em suspensão após 15 minutos sem tráfego de entrada;
+- a primeira requisição seguinte inicia novamente o serviço e pode levar cerca de um minuto;
+- o front-end deve distinguir esse tempo de inicialização de uma indisponibilidade definitiva;
+- o workspace possui limites mensais de horas de instância, banda e minutos de build;
+- o sistema de arquivos do serviço é efêmero e não deve armazenar dados persistentes.
+
+Mensagem prevista para o estado de inicialização:
+
+> A API de demonstração está iniciando. Isso pode levar alguns segundos.
+
+Os limites e preços foram verificados em 29 de julho de 2026 e devem ser confirmados novamente antes do deploy.
+
+### 14.2 Comparação com Railway
+
+Railway também é compatível com Node.js, Fastify, monorepos, pnpm, Turborepo e deploy pelo GitHub.
+
+Na data desta decisão, o plano Free do Railway oferece US$ 1 de crédito mensal após o período de avaliação. Esse crédito pode ser insuficiente para uma API que permaneça ativa por períodos maiores.
+
+Para este projeto de demonstração, o Render Free foi escolhido por ser mais previsível sem custo para um serviço de uso intermitente e por não depender do consumo de um pequeno crédito monetário.
+
+Para projetos maiores, aplicações contínuas ou ambientes com maior uso, Railway será a preferência inicial de avaliação por oferecer uma experiência integrada para:
+
+- gerenciamento de serviços;
+- variáveis de ambiente;
+- logs;
+- deploy de monorepos;
+- serviços internos;
+- bancos e workers;
+- escalabilidade operacional;
+- planos pagos baseados em consumo.
+
+Essa preferência futura não significa que Render não suporte produção. É uma decisão de conveniência para projetos com maior escala e orçamento, que deverá ser reavaliada conforme os requisitos reais e os planos disponíveis.
+
+### 14.3 Variáveis previstas
+
+Front-end na Vercel:
+
+```env
+VITE_API_URL=https://credit-decision-api.onrender.com
+```
+
+`VITE_API_URL` é pública por ser incorporada ao bundle do Vite. Ela não deve conter segredos e deverá usar a URL efetivamente atribuída ao serviço no Render.
+
+API no Render:
+
+```env
+MONGODB_URI=<configurar como segredo no Render>
+MONGODB_DATABASE=credit-decision-hub
+```
+
+Regras:
+
+- `MONGODB_URI` nunca deve ser enviada ao front-end ou versionada;
+- `PORT` será fornecida pelo Render e a API continuará lendo essa variável;
+- `MONGODB_DNS_SERVERS` permanece opcional e só deve ser configurada se o ambiente exigir;
+- novas variáveis só devem ser adicionadas quando a implementação correspondente existir.
+
+### 14.4 Pré-requisitos para o deploy futuro
+
+Antes de configurar os serviços, será necessário:
+
+- fazer o front-end consumir `VITE_API_URL` em produção;
+- configurar CORS na API com a origem efetiva da Vercel;
+- definir diretórios raiz, comandos de build e start para cada aplicação do monorepo;
+- usar `GET /health` como health check da API;
+- configurar no Atlas somente os intervalos de saída informados pelo serviço Render;
+- validar a estratégia de rotas do React Router na Vercel;
+- implementar no front-end o estado visual de inicialização da API;
+- revisar novamente preços, cotas e limitações dos três provedores.
+
+Não liberar `0.0.0.0/0` no Atlas como configuração padrão. O Atlas deve permitir somente as origens necessárias, usando os intervalos CIDR de saída exibidos no painel do serviço Render.
+
+Referências oficiais consultadas:
+
+- [Render — Free instances](https://render.com/docs/free);
+- [Render — Outbound IP addresses](https://render.com/docs/outbound-ip-addresses);
+- [Railway — Pricing plans](https://docs.railway.com/pricing/plans);
+- [Vercel — Monorepos](https://vercel.com/docs/monorepos);
+- [Vercel — Vite](https://vercel.com/docs/frameworks/frontend/vite);
+- [MongoDB Atlas — IP access list](https://www.mongodb.com/docs/atlas/security/add-ip-address-to-list/).
+
+## 15. Entrega incremental
 
 ### Fase 1 — Fundação
 
@@ -469,7 +592,7 @@ Testar:
 - criar Terraform;
 - preparar deploy gratuito ou demonstrativo.
 
-## 15. Regras para agentes
+## 16. Regras para agentes
 
 Antes de implementar:
 
