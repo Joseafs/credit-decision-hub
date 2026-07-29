@@ -1,12 +1,10 @@
 # Contexto compartilhado
 
-Este arquivo concentra o contexto funcional, técnico e metodológico do **Credit Decision Hub**.
+Este arquivo centraliza o contexto funcional, técnico e metodológico do **Credit Decision Hub**.
 
-Agentes e pessoas devem lê-lo antes de implementar, alterar arquitetura ou criar novas regras.
+Pessoas e agentes devem lê-lo antes de implementar, alterar arquitetura ou criar novas regras.
 
----
-
-## 1. Objetivo do projeto
+## 1. Objetivo
 
 O Credit Decision Hub é uma plataforma full-stack para acompanhamento e análise de propostas de crédito.
 
@@ -15,11 +13,7 @@ O projeto tem dois objetivos:
 1. servir como aplicação funcional de portfólio;
 2. aprofundar conhecimentos práticos em React, Node.js, MongoDB, Databricks, Terraform e arquitetura de monorepo.
 
-A solução deve demonstrar organização, qualidade de código, contratos bem definidos, testes, documentação objetiva e decisões técnicas justificáveis.
-
-Todos os dados devem ser fictícios. O sistema não deve ser apresentado como motor real de concessão de crédito.
-
----
+Todos os dados devem ser fictícios. O sistema não deve ser apresentado como um motor real de concessão de crédito.
 
 ## 2. Visão do produto
 
@@ -32,121 +26,109 @@ Analistas poderão:
 - consultar detalhes e histórico;
 - aprovar, reprovar ou encaminhar propostas para análise manual;
 - filtrar propostas por status, risco, período e faixa de valor;
-- acompanhar indicadores em um dashboard;
+- acompanhar indicadores em dashboard;
 - importar dados fictícios por CSV;
 - consultar resultados analíticos processados pelo Databricks.
 
----
+## 3. Stack definida
 
-## 3. Stack principal
-
-### Front-end
+### Front-end — `apps/web`
 
 - React
-- TypeScript
-- Vite
 - React Router
-- TanStack Query
-- React Hook Form
+- TypeScript
+- Tailwind CSS
+- Vite
+- Formik
 - Zod
-- Material UI
-- Recharts
-- Vitest ou Jest
+- Vitest
 - React Testing Library
-- Storybook
 
-### Back-end
+Responsabilidades:
+
+- interface utilizada pelos analistas;
+- navegação entre páginas;
+- formulários e feedback visual;
+- integração com a API;
+- apresentação de propostas, clientes e indicadores.
+
+O front-end não deve acessar o banco de dados diretamente.
+
+### Back-end — `apps/api`
 
 - Node.js
 - TypeScript
 - Fastify
+- Zod
 - MongoDB
 - Mongoose
-- Zod
-- JWT
+- Vitest
 - Swagger / OpenAPI
-- Vitest ou Jest
 
-### Dados e infraestrutura
+Responsabilidades:
 
-- Databricks
-- Apache Spark / PySpark
-- Databricks SQL
-- Terraform
-- Docker
-- Docker Compose
-- GitHub Actions
+- expor endpoints HTTP;
+- validar entradas e saídas;
+- aplicar regras de negócio;
+- acessar o MongoDB;
+- controlar autenticação e autorização quando essa etapa for implementada;
+- integrar futuramente com o Databricks.
+
+### Contratos compartilhados — `packages/contracts`
+
+O Zod será usado no front-end, no back-end e nos contratos compartilhados.
+
+Os contratos definem:
+
+- payloads de entrada;
+- respostas da API;
+- parâmetros de rota e query;
+- enums;
+- mensagens e formatos de erro;
+- tipos TypeScript inferidos dos schemas.
+
+Princípio principal:
+
+> O contrato deve ser definido uma vez e reutilizado pelo front-end e pelo back-end.
+
+Formik controla o estado dos formulários. Zod valida os dados.
+
+### Banco de dados
+
+MongoDB será o banco operacional da aplicação.
+
+Mongoose será responsável pela modelagem e persistência dos documentos.
+
+Separação de responsabilidades:
+
+- Zod valida o contrato da aplicação;
+- Mongoose define como o dado é salvo e consultado no MongoDB.
 
 ### Monorepo
 
 - pnpm workspaces
 - Turborepo
 
----
+O monorepo é a organização de várias aplicações e pacotes em um único repositório.
 
-## 4. Conceitos e responsabilidades
+O Turborepo gerencia tarefas, dependências, cache e execução dos comandos.
 
-### React
+### Tecnologias posteriores
 
-Responsável pela interface utilizada pelos analistas.
+Estas tecnologias fazem parte da evolução do projeto, mas não são requisito da fundação inicial:
 
-Não deve acessar banco de dados diretamente.
+- Databricks;
+- Apache Spark / PySpark;
+- Databricks SQL;
+- Terraform;
+- Docker;
+- Docker Compose;
+- GitHub Actions;
+- autenticação com JWT e hash de senha.
 
-### Node.js
+Não adicionar essas tecnologias antes de existir uma necessidade concreta na fase correspondente.
 
-Responsável pela API, autenticação, validações, regras de negócio, persistência e integrações.
-
-### Contratos de API
-
-Definem a comunicação entre front-end e back-end:
-
-- payloads de entrada;
-- respostas;
-- validações;
-- erros;
-- status HTTP;
-- enums e tipos compartilhados.
-
-Os contratos compartilhados devem ficar em `packages/contracts`.
-
-### MongoDB
-
-Banco operacional da aplicação.
-
-Armazena usuários, clientes, propostas, decisões e histórico de auditoria.
-
-### Databricks
-
-Plataforma de processamento analítico.
-
-Será usada para transformar e analisar conjuntos maiores de propostas, gerando indicadores como:
-
-- taxa de aprovação;
-- ticket médio;
-- distribuição de risco;
-- motivos de reprovação;
-- evolução mensal;
-- agrupamentos por perfil.
-
-O Databricks não substitui o MongoDB.
-
-### Terraform
-
-Infraestrutura como código.
-
-Responsável por descrever recursos de infraestrutura, ambientes, permissões e configurações necessárias para executar a aplicação.
-
-Terraform não contém regras de negócio.
-
-### Turborepo
-
-Ferramenta de gerenciamento do monorepo.
-
-Deve organizar tarefas, dependências, cache e execução de comandos entre aplicações e pacotes.
-
----
-
-## 5. Estrutura inicial esperada
+## 4. Estrutura esperada
 
 ```txt
 credit-decision-hub/
@@ -154,10 +136,7 @@ credit-decision-hub/
 │   ├── web/
 │   └── api/
 ├── packages/
-│   ├── contracts/
-│   ├── ui/
-│   ├── eslint-config/
-│   └── tsconfig/
+│   └── contracts/
 ├── databricks/
 ├── infrastructure/
 │   └── terraform/
@@ -168,13 +147,60 @@ credit-decision-hub/
 └── turbo.json
 ```
 
-A estrutura pode evoluir, mas alterações relevantes devem preservar separação de responsabilidades e simplicidade.
+Evitar criar arquivos Markdown adicionais sem necessidade. O contexto compartilhado deve permanecer centralizado neste arquivo.
 
----
+## 5. Conceitos principais
+
+### React
+
+Interface da aplicação.
+
+### Node.js
+
+Ambiente de execução do back-end.
+
+### Fastify
+
+Framework usado para criar a API, rotas, plugins e tratamento HTTP.
+
+### Zod
+
+Validação de dados e fonte dos tipos compartilhados.
+
+### MongoDB
+
+Banco de dados operacional.
+
+### Mongoose
+
+Camada de modelagem e acesso ao MongoDB.
+
+### Databricks
+
+Plataforma de processamento e análise de dados.
+
+No projeto, será usada futuramente para processar conjuntos maiores de propostas e gerar indicadores como:
+
+- taxa de aprovação;
+- ticket médio;
+- distribuição de risco;
+- motivos de reprovação;
+- evolução mensal;
+- agrupamentos por perfil.
+
+Databricks não substitui o MongoDB.
+
+### Terraform
+
+Infraestrutura como código.
+
+Descreve os recursos necessários para executar a aplicação, como serviços, ambientes, permissões e configurações.
+
+Terraform não contém regras de negócio.
 
 ## 6. Domínio inicial
 
-### Usuário
+### Usuários
 
 Perfis iniciais:
 
@@ -211,7 +237,7 @@ Campos iniciais:
 - data de criação;
 - data da última atualização.
 
-### Status da proposta
+### Status
 
 - `pending`
 - `approved`
@@ -226,31 +252,26 @@ Campos iniciais:
 - `medium`
 - `high`
 
----
+## 7. Regras iniciais
 
-## 7. Regras iniciais do domínio
-
-Estas regras são apenas uma simulação didática e podem evoluir.
+Estas regras são apenas uma simulação didática:
 
 - score alto e baixo comprometimento de renda aumentam a chance de aprovação;
 - score baixo e comprometimento elevado aumentam a chance de reprovação;
 - propostas de valor elevado podem exigir análise manual;
-- propostas recentes podem permanecer pendentes;
 - documentação incompleta gera `pending_documents`;
 - inconsistências específicas podem gerar `fraud_suspected`;
 - toda mudança de status deve gerar histórico;
 - decisões manuais devem registrar o usuário responsável;
 - nenhuma regra deve ser tratada como modelo financeiro real.
 
-Não alterar regras do domínio silenciosamente. Mudanças devem ser explícitas no código, nos testes e neste contexto quando necessário.
+Não alterar regras do domínio silenciosamente.
 
----
-
-## 8. População inicial da base
+## 8. População inicial
 
 Usar `@faker-js/faker` com locale `pt_BR`.
 
-Carga inicial sugerida:
+Carga sugerida:
 
 - 1 administrador;
 - 5 analistas;
@@ -258,9 +279,9 @@ Carga inicial sugerida:
 - 1.000 propostas;
 - histórico distribuído pelos últimos 12 meses.
 
-Os dados devem ser coerentes entre si. Evitar valores totalmente aleatórios sem relação entre score, renda, valor solicitado, risco e status.
+Os dados devem ser coerentes entre score, renda, valor solicitado, risco e status.
 
-Também criar cenários determinísticos para testes e demonstração:
+Também devem existir cenários determinísticos:
 
 - proposta aprovada;
 - proposta reprovada por score baixo;
@@ -268,44 +289,48 @@ Também criar cenários determinísticos para testes e demonstração:
 - proposta com suspeita de fraude;
 - proposta aguardando documentos.
 
----
-
 ## 9. Arquitetura do back-end
 
-Preferir organização por domínio e responsabilidade.
+Estrutura inicial simples, organizada por domínio:
+
+```txt
+apps/api/src/
+├── app.ts
+├── server.ts
+├── config/
+├── database/
+├── shared/
+└── modules/
+    ├── customers/
+    ├── proposals/
+    └── users/
+```
 
 Estrutura sugerida por módulo:
 
 ```txt
-src/modules/proposals/
-├── controllers/
-├── services/
-├── repositories/
-├── schemas/
-├── mappers/
-├── types.ts
-├── routes.ts
-└── tests/
+proposals/
+├── proposal.routes.ts
+├── proposal.controller.ts
+├── proposal.service.ts
+├── proposal.repository.ts
+├── proposal.model.ts
+└── proposal.test.ts
 ```
 
-Princípios:
+Responsabilidades:
 
-- controller recebe e responde HTTP;
+- route define endpoint e schemas HTTP;
+- controller recebe a requisição e monta a resposta;
 - service aplica regras de negócio;
 - repository acessa persistência;
-- schema valida entrada e saída;
-- mapper converte estruturas quando necessário;
-- regras não devem ficar espalhadas em rotas ou controllers;
-- dependências externas devem ser isoladas;
-- evitar abstrações prematuras.
+- model define a collection do MongoDB.
 
----
+Evitar abstrações prematuras e camadas sem função real.
 
 ## 10. Arquitetura do front-end
 
-Preferir componentes pequenos e responsabilidades claras.
-
-Estrutura sugerida:
+Componentes devem ser pequenos e separados quando fizer sentido:
 
 ```txt
 src/components/ProposalCard/
@@ -317,116 +342,101 @@ src/components/ProposalCard/
 
 Princípios:
 
-- separar apresentação, estado e integração quando fizer sentido;
+- separar apresentação, estado e integração;
 - reutilizar contratos compartilhados;
-- chamadas HTTP devem ficar fora dos componentes visuais;
-- formulários devem usar React Hook Form e Zod;
-- dados remotos devem usar TanStack Query;
-- evitar componentes grandes e altamente acoplados;
-- priorizar legibilidade sobre abstrações complexas.
+- manter chamadas HTTP fora dos componentes visuais;
+- usar Formik para controle dos formulários;
+- usar Zod para validação;
+- evitar estado global sem necessidade;
+- priorizar legibilidade.
 
----
+Context API deve ser usada somente para estado global simples, como sessão e permissões, quando necessário.
 
 ## 11. Testes
 
-### Convenções gerais
+### Convenções
 
 - usar `test` em vez de `it`;
 - descrições devem começar com `should`;
 - usar `screen` nas consultas do React Testing Library;
-- usar Faker quando a aleatoriedade não comprometer previsibilidade;
+- usar Faker quando a aleatoriedade não comprometer a previsibilidade;
 - criar helpers de renderização reutilizáveis;
-- testar comportamento, não detalhes internos;
-- evitar snapshots extensos.
+- testar comportamento, não detalhes internos.
 
-Exemplo:
+### Front-end
 
-```tsx
-const componentRender = (props: ProposalCardProps) =>
-  render(withThemeProvider(<ProposalCard {...props} />));
-
-test('should display proposal status', () => {
-  componentRender(props);
-
-  expect(screen.getByText('Aprovada')).toBeInTheDocument();
-});
-```
+Usar Vitest e React Testing Library.
 
 ### Back-end
 
+Usar Vitest e `Fastify.inject()`.
+
 Testar:
 
-- validações;
-- regras do domínio;
+- schemas Zod;
+- regras de negócio;
+- services;
+- repositories quando necessário;
+- endpoints;
 - transições de status;
-- erros esperados;
-- autorização;
-- contratos principais.
+- erros esperados.
 
----
-
-## 12. Qualidade e estilo de código
+## 12. Qualidade de código
 
 - TypeScript estrito;
-- nomes claros e descritivos;
+- nomes claros;
 - funções pequenas;
-- responsabilidades únicas;
+- responsabilidade única;
 - composição sobre herança;
 - evitar `any`;
-- evitar comentários que apenas repetem o código;
-- evitar duplicação real, sem criar abstrações prematuras;
 - aplicar SOLID com pragmatismo;
-- priorizar código fácil de entender e manter;
-- não adicionar dependências sem necessidade justificável.
+- evitar duplicação real;
+- não criar abstrações prematuras;
+- não adicionar dependências sem justificativa.
 
----
+## 13. Segurança
 
-## 13. Segurança e privacidade
-
-- todos os dados são fictícios;
-- não usar CPFs, e-mails, telefones ou documentos reais;
+- usar somente dados fictícios;
 - não versionar segredos;
 - usar variáveis de ambiente;
-- não registrar senhas ou tokens em logs;
 - validar todas as entradas;
-- armazenar senhas com hash;
-- limitar permissões por perfil;
+- não registrar senhas ou tokens em logs;
+- armazenar senhas com hash quando autenticação for implementada;
 - manter trilha de auditoria das decisões.
-
----
 
 ## 14. Entrega incremental
 
 ### Fase 1 — Fundação
 
-- configurar pnpm workspace;
+- configurar pnpm workspaces;
 - configurar Turborepo;
 - criar `apps/web`;
 - criar `apps/api`;
 - criar `packages/contracts`;
-- configurar lint, format e TypeScript.
+- configurar TypeScript, lint e format.
 
 ### Fase 2 — API e banco
 
 - conectar MongoDB;
-- criar autenticação;
 - criar módulos de clientes e propostas;
+- criar schemas compartilhados com Zod;
 - criar seed inicial;
 - documentar endpoints com Swagger.
 
 ### Fase 3 — Front-end
 
-- criar login;
 - criar listagem de propostas;
 - criar detalhes;
-- criar formulário;
+- criar formulário com Formik e Zod;
 - criar filtros;
 - integrar com a API.
 
-### Fase 4 — Dashboard
+### Fase 4 — Autenticação e dashboard
 
+- criar autenticação;
+- criar permissões;
 - criar indicadores operacionais;
-- adicionar gráficos;
+- adicionar gráficos quando necessários;
 - adicionar histórico e auditoria.
 
 ### Fase 5 — Databricks
@@ -443,44 +453,15 @@ Testar:
 - criar Terraform;
 - preparar deploy gratuito ou demonstrativo.
 
----
-
 ## 15. Regras para agentes
 
 Antes de implementar:
 
-1. leia este arquivo;
-2. verifique a estrutura existente;
-3. preserve decisões já adotadas;
-4. não invente novas tecnologias sem necessidade;
-5. não altere contratos silenciosamente;
-6. implemente apenas o escopo solicitado;
-7. mantenha mudanças pequenas e revisáveis;
-8. atualize este contexto apenas quando houver mudança arquitetural, funcional ou metodológica relevante.
-
-Ao concluir uma tarefa:
-
-- execute lint;
-- execute testes relacionados;
-- execute typecheck;
-- informe arquivos alterados;
-- informe decisões tomadas;
-- informe pendências reais;
-- não declare sucesso se comandos não foram executados.
-
----
-
-## 16. Convenção de commits
-
-Usar Conventional Commits:
-
-```txt
-feat: add proposal creation
-fix: validate income commitment
-refactor: isolate proposal repository
-test: cover manual review rule
-docs: update shared project context
-chore: configure turborepo
-```
-
-Commits devem ser objetivos e representar uma unidade lógica de mudança.
+1. ler este arquivo;
+2. verificar a estrutura existente;
+3. preservar as decisões adotadas;
+4. não adicionar bibliotecas ou camadas sem necessidade;
+5. não implementar fases futuras antecipadamente;
+6. não inventar requisitos de negócio;
+7. manter alterações pequenas e revisáveis;
+8. atualizar este arquivo apenas quando uma decisão compartilhada realmente mudar.
