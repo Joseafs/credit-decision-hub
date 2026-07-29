@@ -15,6 +15,7 @@ describe("AppHeader", () => {
     fireEvent.click(screen.getByRole("button", { name: "EN" }));
 
     expect(screen.getByRole("link", { name: "Customers" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Proposals" })).toBeInTheDocument();
     await waitFor(() => {
       expect(document.documentElement.lang).toBe("en");
     });

@@ -6,6 +6,9 @@ import { CustomerCreatePage } from "./pages/CustomerCreatePage";
 import { CustomerDetailsPage } from "./pages/CustomerDetailsPage";
 import { CustomersPage } from "./pages/CustomersPage";
 import { HomePage } from "./pages/HomePage";
+import { ProposalCreatePage } from "./pages/ProposalCreatePage";
+import { ProposalDetailsPage } from "./pages/ProposalDetailsPage";
+import { ProposalsPage } from "./pages/ProposalsPage";
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +34,18 @@ export const router = createBrowserRouter([
       {
         path: "customers/:customerId",
         element: <CustomerDetailsPage />,
+      },
+      {
+        path: "proposals",
+        element: <ProposalsPage />,
+      },
+      {
+        path: "proposals/new",
+        element: <ProposalCreatePage />,
+      },
+      {
+        path: "proposals/:proposalId",
+        element: <ProposalDetailsPage />,
       },
     ],
   },

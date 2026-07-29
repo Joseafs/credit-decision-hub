@@ -30,15 +30,15 @@ Implementado:
 - seed fictício de clientes e propostas;
 - documentação OpenAPI navegável;
 - fluxo front-end de criação, listagem paginada e consulta de clientes;
+- fluxo front-end de criação, listagem paginada e consulta de propostas;
 - temas claro e escuro e interface em PT-BR e inglês.
 
 Em execução:
 
-- fluxo front-end de propostas.
+- filtros e estados de navegação.
 
 Não implementado:
 
-- telas de propostas;
 - autenticação;
 - dashboard;
 - Databricks;
@@ -491,6 +491,18 @@ Os catálogos de tradução são objetos TypeScript com as mesmas chaves. Uma tr
 
 A paleta não é codificada diretamente nos componentes. `index.css` define tokens semânticos do Tailwind para canvas, superfícies, textos, bordas, cor primária e feedbacks. Cada tema fornece somente os valores desses tokens. Assim, uma mudança futura de paleta fica concentrada no tema e não exige alterar as classes de cada componente.
 
+## 9.12 Front-end de propostas
+
+O fluxo de propostas possui rotas próprias para listagem paginada, criação e detalhes. As chamadas HTTP ficam em `src/api`, e cada resposta é validada pelos schemas Zod compartilhados antes de chegar às páginas.
+
+O formulário usa Formik para estado e interação. Sua validação reutiliza os tipos do contrato compartilhado e converte somente a representação textual dos campos numéricos antes do envio. O seletor consulta o endpoint paginado de clientes com o limite máximo de 100 opções já suportado pela API, sem introduzir busca ou estado global antes da tarefa de filtros.
+
+A API permanece como fonte única para parcela estimada, comprometimento de renda, risco, status, motivo e histórico. O front-end não recalcula nem permite substituir a decisão automática. Após a criação, a interface apresenta o resultado persistido e sua trilha de eventos em modo somente leitura.
+
+Status, risco, motivos, indícios de fraude e responsáveis são recebidos como valores canônicos do contrato. Mapas tipados os associam às chaves dos catálogos PT-BR e inglês, mantendo o domínio independente do idioma e fazendo novos valores falharem no `typecheck` quando ainda não tiverem apresentação definida.
+
+Os componentes de lista e indicador de status são separados das páginas por terem responsabilidade visual reutilizável. Estados de carregamento, lista vazia, erro, sucesso e paginação seguem os mesmos padrões do fluxo de clientes e usam os tokens semânticos dos temas.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -557,6 +569,8 @@ A paleta não é codificada diretamente nos componentes. `index.css` define toke
 | 2026-07-29 | Usar tokens semânticos do Tailwind para temas claro e escuro | Permitir mudar a paleta em um único ponto sem acoplar componentes a cores concretas |
 | 2026-07-29 | Manter catálogos PT-BR e inglês tipados sem biblioteca adicional | Garantir consistência das traduções com uma solução proporcional ao escopo atual |
 | 2026-07-29 | Reservar `/api` para o proxy HTTP do front-end em desenvolvimento | Evitar colisão entre endpoints da API e acessos diretos às rotas do React Router |
+| 2026-07-29 | Manter a API como fonte única da avaliação exibida no fluxo de propostas | Evitar divergência entre cálculos, decisão persistida e apresentação |
+| 2026-07-29 | Traduzir valores canônicos de propostas por mapas tipados no front-end | Oferecer dois idiomas sem duplicar ou localizar o contrato de domínio |
 
 ## 13. Atualização deste documento
 

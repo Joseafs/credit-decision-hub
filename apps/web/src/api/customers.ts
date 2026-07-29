@@ -14,9 +14,10 @@ const CUSTOMER_PAGE_LIMIT = 10;
 export const listCustomers = (
   page: number,
   signal?: AbortSignal,
+  limit = CUSTOMER_PAGE_LIMIT,
 ): Promise<CustomerListResponse> =>
   requestJson(
-    `/api/customers?page=${page}&limit=${CUSTOMER_PAGE_LIMIT}`,
+    `/api/customers?page=${page}&limit=${limit}`,
     customerListResponseSchema,
     signal ? { signal } : undefined,
   );

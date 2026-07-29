@@ -42,6 +42,9 @@ export const AppHeader = () => {
             <NavLink className={navLinkClassName} to="/customers">
               {translate("nav.customers")}
             </NavLink>
+            <NavLink className={navLinkClassName} to="/proposals">
+              {translate("nav.proposals")}
+            </NavLink>
           </nav>
 
           <div
