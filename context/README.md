@@ -4,6 +4,18 @@ Este arquivo centraliza o contexto funcional, técnico e metodológico do **Cred
 
 Pessoas e agentes devem lê-lo antes de implementar, alterar arquitetura ou criar novas regras.
 
+## Documentos canônicos
+
+O contexto do projeto é dividido apenas quando cada documento possui uma responsabilidade clara:
+
+- este `README.md` define produto, domínio, stack, princípios e fases;
+- o [`SDD.md`](./SDD.md) registra o desenho técnico, as fronteiras e as decisões de arquitetura;
+- o [`PROJECT-TASKS.md`](./PROJECT-TASKS.md) é a fonte operacional do estado atual, da próxima tarefa e das evidências de conclusão.
+
+Ordem de leitura obrigatória: `README.md`, `SDD.md` e `PROJECT-TASKS.md`.
+
+Evitar novos arquivos Markdown em `context/`. Uma nova separação exige uma responsabilidade duradoura que não pertença a nenhum dos três documentos canônicos.
+
 ## 1. Objetivo
 
 O Credit Decision Hub é uma plataforma full-stack para acompanhamento e análise de propostas de crédito.
@@ -141,13 +153,15 @@ credit-decision-hub/
 ├── infrastructure/
 │   └── terraform/
 ├── context/
-│   └── README.md
+│   ├── README.md
+│   ├── SDD.md
+│   └── PROJECT-TASKS.md
 ├── package.json
 ├── pnpm-workspace.yaml
 └── turbo.json
 ```
 
-Evitar criar arquivos Markdown adicionais sem necessidade. O contexto compartilhado deve permanecer centralizado neste arquivo.
+Os diretórios de tecnologias futuras só devem ser criados na fase correspondente.
 
 ## 5. Conceitos principais
 
@@ -458,10 +472,14 @@ Testar:
 Antes de implementar:
 
 1. ler este arquivo;
-2. verificar a estrutura existente;
-3. preservar as decisões adotadas;
-4. não adicionar bibliotecas ou camadas sem necessidade;
-5. não implementar fases futuras antecipadamente;
-6. não inventar requisitos de negócio;
-7. manter alterações pequenas e revisáveis;
-8. atualizar este arquivo apenas quando uma decisão compartilhada realmente mudar.
+2. ler o `SDD.md`;
+3. consultar o `PROJECT-TASKS.md` e executar somente a tarefa ativa;
+4. verificar a estrutura e o estado real do repositório;
+5. preservar as decisões adotadas;
+6. não adicionar bibliotecas ou camadas sem necessidade;
+7. não implementar fases futuras antecipadamente;
+8. não inventar requisitos de negócio;
+9. manter alterações pequenas e revisáveis;
+10. manter uma tarefa por commit;
+11. registrar no router apenas resultados confirmados por comandos ou testes;
+12. atualizar este arquivo apenas quando uma decisão compartilhada realmente mudar.
