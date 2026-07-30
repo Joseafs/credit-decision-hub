@@ -212,6 +212,13 @@ Endereços locais padrão:
 - health check: <http://localhost:3333/health>;
 - Swagger UI: <http://localhost:3333/documentation/>.
 
+Endereços publicados:
+
+- front-end: <https://credit-decision-hub-web.vercel.app>;
+- API: <https://credit-decision-api.onrender.com>;
+- health check: <https://credit-decision-api.onrender.com/health>;
+- Swagger UI: <https://credit-decision-api.onrender.com/documentation/>.
+
 O Storybook é iniciado separadamente quando necessário:
 
 ```powershell
