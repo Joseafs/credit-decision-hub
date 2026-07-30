@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://json.schemastore.org/render.json
+
+services:
+  - type: web
+    name: credit-decision-api
+    runtime: node
+    plan: free
+    autoDeployTrigger: checksPass
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec turbo build --filter=@credit-decision-hub/api
+    startCommand: pnpm --filter @credit-decision-hub/api start
+    healthCheckPath: /health
+    buildFilter:
+      paths:
+        - apps/api/**
+        - packages/contracts/**
+        - packages/typescript-config/**
+        - package.json
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
+        - turbo.json
+    envVars:
+      - key: NODE_VERSION
+        value: "22.22.0"
+      - key: NODE_ENV
+        value: "production"
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        value: "credit-decision-hub"
+      - key: AUTH_JWT_SECRET
+        generateValue: true
+      - key: AUTH_SECURE_COOKIE
+        value: "true"
+      - key: DATABRICKS_HOST
+        sync: false
+      - key: DATABRICKS_WAREHOUSE_ID
+        sync: false
+      - key: DATABRICKS_TOKEN
+        sync: false

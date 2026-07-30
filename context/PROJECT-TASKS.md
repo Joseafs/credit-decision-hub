@@ -159,6 +159,22 @@ Evidência da segunda subetapa:
 - relatórios confirmaram 48 arquivos de teste e 186 testes aprovados nos quatro
   workspaces testados.
 
+Preparação da terceira subetapa:
+
+- Blueprint do Render versionado na raiz do monorepo;
+- API configurada como Web Service Node.js no plano Free, sem Docker;
+- build executado da raiz para preservar acesso aos pacotes compartilhados;
+- deploy automático condicionado aos checks aprovados no GitHub;
+- `/health` definido como health check;
+- segredos ausentes do Git, com JWT gerado pelo Render e credenciais externas
+  solicitadas somente no primeiro cadastro;
+- `WEB_ORIGIN` postergada até a Vercel fornecer a origem pública real;
+- instalação congelada e build filtrado da API aprovados com Node.js 22 e pnpm
+  10;
+- artefato compilado iniciado localmente pelo comando de produção e `/health`
+  confirmado com status `200` e o contrato esperado;
+- `lint`, `typecheck`, 186 testes e build completo aprovados.
+
 ## 7. Entregas concluídas
 
 | ID | Entrega | Commit | Evidência |
@@ -186,7 +202,8 @@ Evidência da segunda subetapa:
 - tarefa ativa: `CDH-015`;
 - subetapas concluídas: prontidão cross-origin, workflow de qualidade e primeira
   execução verde no GitHub Actions;
-- próxima ação: preparar e configurar a API no Render;
+- próxima ação: sincronizar o Blueprint e validar o primeiro deploy da API no
+  Render;
 - bloqueio: a criação do Web Service e o cadastro dos segredos dependem da conta
   do usuário no Render;
 - push: não realizado nesta entrega.

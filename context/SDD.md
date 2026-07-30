@@ -887,6 +887,34 @@ executados com sucesso. A primeira execução no runner hospedado também foi
 confirmada: o push do commit `e9416de` na `main` concluiu o job completo com
 status `Success` em 1 minuto e 4 segundos.
 
+## 9.21 Preparação da API para o Render
+
+O Blueprint `render.yaml` descreve somente o Web Service da API. O serviço usa
+o runtime Node.js nativo e o plano Free, sem Docker ou disco persistente.
+
+O diretório raiz do serviço permanece na raiz do repositório. Definir
+`apps/api` como `rootDir` impediria o build de acessar `packages/contracts`,
+`packages/typescript-config`, o lockfile e a configuração do workspace. O
+Turborepo recebe um filtro para a API e constrói também suas dependências.
+
+Configuração versionada:
+
+- Node.js `22.22.0`, compatível com a faixa `>=22.13.0 <23.0.0` do monorepo;
+- instalação com o lockfile congelado;
+- build da API e de suas dependências pelo Turborepo;
+- start pelo script compilado de `apps/api`;
+- health check em `GET /health`;
+- deploy automático somente depois que os checks do GitHub passarem;
+- filtro de build limitado à API, aos pacotes necessários e às configurações
+  compartilhadas que afetam sua compilação.
+
+`MONGODB_URI` e as três variáveis do Databricks usam `sync: false`, fazendo o
+Render solicitá-las na criação inicial do Blueprint sem versionar valores.
+`AUTH_JWT_SECRET` é gerado pelo próprio Render. `WEB_ORIGIN` ainda não integra o
+Blueprint porque depende da URL efetivamente atribuída pela Vercel; ela será
+adicionada ao ambiente do serviço antes da validação autenticada entre os
+provedores.
+
 ## 10. Estratégia de testes
 
 ### Contratos
