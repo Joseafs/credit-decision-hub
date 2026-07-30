@@ -33,7 +33,7 @@ As decisões de produto pertencem ao [`README.md`](./README.md). As decisões t�
 
 | Ordem | ID | Fase | Estado | Entrega |
 | --- | --- | --- | --- | --- |
-| 1 | `CDH-017` | Complemento | `ACTIVE` | Demonstrar Terraform sobre a infraestrutura existente |
+| 1 | `CDH-017` | Complemento | `DONE` | Demonstrar Terraform sobre a infraestrutura existente |
 
 Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados somente quando se tornarem próximos, evitando especificação prematura.
 
@@ -159,8 +159,8 @@ Entregas:
 - [x] ignorar state, planos e arquivos locais sensíveis;
 - [x] executar `terraform fmt -check`;
 - [x] executar `terraform init` e `terraform validate`;
-- [ ] importar os recursos existentes de forma controlada;
-- [ ] executar e revisar um `terraform plan` real sem destruição ou recriação
+- [x] importar os recursos existentes de forma controlada;
+- [x] executar e revisar um `terraform plan` real sem destruição ou recriação
   não intencional;
 - [x] registrar no SDD o que o exercício demonstrou e seus limites.
 
@@ -198,8 +198,27 @@ Evidência da configuração estática:
   confirmados como ignorados pelo Git.
 - `pnpm lint`, `pnpm typecheck`, 187 testes e `pnpm build` aprovados após a
   inclusão do complemento.
+- seis recursos existentes associados ao state local: projeto e variável da
+  Vercel; projeto, cluster e dois CIDRs do Atlas;
+- primeiro plano detectou três substituições e foi bloqueado por
+  `prevent_destroy`, sem executar alterações;
+- configuração alinhada ao ambiente real e plano final revisado com `0` para
+  adicionar, `2` atualizações em-place da Vercel e `0` para destruir;
+- nenhum `terraform apply` executado.
 
 ## 7. Tarefa concluída mais recente
+
+### `CDH-017` — Terraform como complemento de infraestrutura
+
+Entregas:
+
+- [x] modelar Vercel e Atlas sem dupla propriedade com o Render;
+- [x] proteger credenciais, state e planos locais;
+- [x] importar os seis recursos existentes;
+- [x] revisar um plano real sem destruição;
+- [x] documentar limites, runner local e resultado do exercício.
+
+## 7.1 Tarefa de infraestrutura concluída anteriormente
 
 ### `CDH-015` — Infraestrutura, CI/CD e deploy
 
@@ -329,20 +348,19 @@ Avaliação do Terraform:
 | `CDH-014` | Etapa analítica com Databricks | `feat(analytics): integrar resultados ao dashboard (CDH-014)` | exportação reproduzível, notebook PySpark, tabelas Delta, endpoint protegido, 179 testes e smoke test real aprovados |
 | `CDH-015` | Infraestrutura, CI/CD e deploy | `feat(infra): concluir deploy demonstrativo (CDH-015)` | GitHub Actions verde, Vercel, Render e Atlas integrados, login hospedado, cold start tratado e Terraform avaliado |
 | `CDH-016` | Design system e Storybook | `feat(ui): criar design system com Storybook (CDH-016)` | 127 testes, três componentes compartilhados, temas centralizados, catálogo estático e inspeção visual aprovados |
+| `CDH-017` | Terraform como complemento | `feat(infra): concluir complemento Terraform (CDH-017)` | seis imports reais, proteção contra destruição, plano final sem criação ou destruição e nenhum apply |
 
 ## 9. Handoff atual
 
 - branch: `main`;
-- última tarefa concluída: `CDH-015`;
-- tarefa ativa: `CDH-017`;
+- última tarefa concluída: `CDH-017`;
+- tarefa ativa: nenhuma;
 - subetapas concluídas: prontidão cross-origin, workflow de qualidade, deploy
   da API no Render, deploy do front-end na Vercel, integração com Atlas,
   validação autenticada, tratamento do cold start e avaliação do Terraform;
-- próxima ação: configurar credenciais administrativas somente no ambiente
-  local, preencher os identificadores e importar os recursos existentes;
+- próxima ação: definir uma nova tarefa somente quando houver objetivo aprovado;
 - bloqueio para a configuração estática: nenhum;
-- dependências da validação real: credenciais locais da Vercel e do Atlas,
-  identificadores dos projetos, região exata do cluster e CIDRs existentes;
+- dependências da validação real: nenhuma;
 - push: não realizado nesta entrega.
 
 Ao encerrar uma tarefa, registrar:

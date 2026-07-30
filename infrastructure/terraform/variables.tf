@@ -79,7 +79,7 @@ variable "atlas_project_name" {
 variable "atlas_cluster_name" {
   description = "Nome do cluster M0 existente no MongoDB Atlas."
   type        = string
-  default     = "Cluster0"
+  default     = "Cluster0-gcloud"
 
   validation {
     condition     = length(trimspace(var.atlas_cluster_name)) > 0

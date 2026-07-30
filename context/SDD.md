@@ -1036,6 +1036,25 @@ deve escolher um backend remoto protegido e autorizar a origem do novo runner.
 Mover a execução muda a origem das chamadas; não basta copiar somente os
 arquivos `.tf`.
 
+### Resultado da importação e do plano
+
+O exercício real associou ao state local seis recursos existentes: projeto e
+variável de ambiente da Vercel; projeto, cluster `Cluster0-gcloud` e dois CIDRs
+do Render no Atlas. Nenhum recurso foi criado durante a importação.
+
+O primeiro plano detectou substituições causadas por diferenças entre a
+declaração inicial e o estado remoto. `prevent_destroy` bloqueou essas ações
+antes de qualquer alteração. Após alinhar nome, comentário, comando de build e
+sensibilidade da variável ao ambiente existente, o plano final apresentou:
+
+- `0` recursos para adicionar;
+- `2` atualizações em-place calculadas pelo provider da Vercel;
+- `0` recursos para destruir.
+
+Nenhum `terraform apply` foi executado. Isso demonstra que importar não altera
+automaticamente o recurso e que o plano deve ser tratado como artefato de
+revisão, não como autorização implícita para modificar a infraestrutura.
+
 ## 10. Estratégia de testes
 
 ### Contratos

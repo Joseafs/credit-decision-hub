@@ -19,7 +19,7 @@ import {
 
 import {
   to = mongodbatlas_advanced_cluster.poc
-  id = "SUBSTITUA_PELO_ATLAS_PROJECT_ID-Cluster0"
+  id = "SUBSTITUA_PELO_ATLAS_PROJECT_ID-Cluster0-gcloud"
 }
 
 # Repita um bloco para cada CIDR configurado em atlas_access_cidrs.

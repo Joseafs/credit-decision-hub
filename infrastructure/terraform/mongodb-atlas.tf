@@ -39,7 +39,7 @@ resource "mongodbatlas_project_ip_access_list" "render" {
 
   project_id = mongodbatlas_project.poc.id
   cidr_block = each.value
-  comment    = "Render outbound - managed by Terraform"
+  comment    = "Render - credit-decision-api"
 
   lifecycle {
     prevent_destroy = true
