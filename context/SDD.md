@@ -1013,6 +1013,29 @@ valores no código.
 ignorados pelo Git. O lockfile permanece versionado, pois ele protege a seleção
 reproduzível dos providers e não contém credenciais.
 
+### Runner e state do exercício
+
+O primeiro ciclo da `CDH-017` usa o computador Windows local como runner. O
+Terraform executado nesse computador:
+
+1. carrega as credenciais do `.env` local;
+2. autentica nos providers;
+3. consulta Vercel e Atlas a partir do IP público local;
+4. registra as associações importadas em um state local;
+5. calcula o plano comparando código, state e recursos remotos.
+
+A lista administrativa da Service Account do Atlas contém somente o IP do
+runner local. Os CIDRs do Render pertencem à lista de acesso ao banco e não à
+lista administrativa, porque é a API hospedada que abre conexões MongoDB. As
+duas listas protegem fluxos diferentes.
+
+O state local é proporcional ao exercício individual, mas não é a arquitetura
+recomendada para uma equipe: ele não oferece coordenação, locking compartilhado
+ou recuperação centralizada. Uma evolução para CI ou múltiplos colaboradores
+deve escolher um backend remoto protegido e autorizar a origem do novo runner.
+Mover a execução muda a origem das chamadas; não basta copiar somente os
+arquivos `.tf`.
+
 ## 10. Estratégia de testes
 
 ### Contratos
@@ -1112,6 +1135,7 @@ reproduzível dos providers e não contém credenciais.
 | 2026-07-29 | Explicar o cold start após cinco segundos de espera | Distinguir a inicialização esperada do Render Free de uma conexão comum sem alarmar prematuramente o usuário |
 | 2026-07-29 | Manter Blueprint, integração Git e painéis como proprietários da infraestrutura atual | Evitar dupla propriedade e importação arriscada de recursos existentes apenas para introduzir Terraform |
 | 2026-07-29 | Implementar Terraform como complemento posterior à POC | Ensinar IaC, importação, state, plano e drift sem transformar a ferramenta em requisito artificial do deploy já concluído |
+| 2026-07-30 | Usar runner e state locais no primeiro exercício Terraform | Manter a adoção individual simples e explicitar a futura necessidade de execução e state remotos em equipe |
 
 ## 13. Atualização deste documento
 

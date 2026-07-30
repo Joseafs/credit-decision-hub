@@ -675,6 +675,27 @@ reprodutibilidade, revisão de mudanças, visibilidade sobre drift e redução d
 configurações manuais. O complemento não deve recriar nem destruir os recursos
 já usados pela POC.
 
+Terraform sempre é executado por um **runner**. O runner pode ser:
+
+- o computador de uma pessoa;
+- um job de CI;
+- um servidor interno;
+- uma plataforma remota especializada.
+
+Nesta POC, o runner é o computador local do responsável pelo projeto. Portanto:
+
+- as chamadas administrativas partem do IP público desse computador;
+- a Service Account do Atlas autoriza somente esse IP;
+- o state é local e ignorado pelo Git;
+- as credenciais ficam no `.env` local e ignorado;
+- o código `.tf` e o lockfile são versionados.
+
+Código, credenciais e state têm responsabilidades diferentes. O código declara
+o estado desejado; as credenciais autorizam o runner; o state associa cada
+declaração ao recurso real. Em uma equipe, a evolução recomendada é usar runner
+e state remotos protegidos, evitando states locais independentes e permitindo
+que todos compartilhem a mesma referência.
+
 ## 16. Regras para agentes
 
 Antes de implementar:
