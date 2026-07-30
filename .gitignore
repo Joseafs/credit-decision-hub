@@ -6,6 +6,7 @@ storybook-static/
 /artifacts/
 
 infrastructure/terraform/.terraform/
+infrastructure/terraform/.env
 infrastructure/terraform/*.tfstate
 infrastructure/terraform/*.tfstate.*
 infrastructure/terraform/*.tfplan
