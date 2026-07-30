@@ -186,6 +186,22 @@ Evidência do deploy da API:
 - `GET https://credit-decision-api.onrender.com/health` respondeu `200` com
   `{"status":"ok","service":"credit-decision-api"}`.
 
+Preparação da Vercel:
+
+- `apps/web` definido como raiz esperada do projeto Vite no monorepo;
+- fallback da SPA versionado para preservar rotas diretas do React Router;
+- `VITE_API_URL` incluída no hash específico do build do web;
+- Vitest isolado de uma `VITE_API_URL` herdada para preservar expectativas do
+  proxy local;
+- origem pública do Render definida como valor esperado na Vercel;
+- nenhuma dependência ou função serverless adicionada;
+- `WEB_ORIGIN` permanece pendente até existir uma URL pública real da Vercel;
+- build filtrado confirmou a origem do Render no bundle e no hash do
+  Turborepo;
+- suíte completa permaneceu determinística mesmo herdando a variável de
+  produção;
+- `lint`, `typecheck`, 186 testes e build completo aprovados.
+
 ## 7. Entregas concluídas
 
 | ID | Entrega | Commit | Evidência |

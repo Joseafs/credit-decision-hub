@@ -915,6 +915,37 @@ Blueprint porque depende da URL efetivamente atribuída pela Vercel; ela será
 adicionada ao ambiente do serviço antes da validação autenticada entre os
 provedores.
 
+## 9.22 Preparação do front-end para a Vercel
+
+A Vercel tratará `apps/web` como o diretório raiz do projeto Vite. O suporte
+nativo a monorepos mantém o acesso a `packages/contracts` e `packages/ui`,
+dependências declaradas explicitamente pelo web.
+
+O arquivo `apps/web/vercel.json` define somente o fallback da SPA para
+`/index.html`. Assim, acessos diretos e recarregamentos em rotas do React Router
+retornam o documento da aplicação, enquanto os assets existentes continuam
+sendo servidos normalmente pela plataforma.
+
+`VITE_API_URL` deve ser configurada na Vercel com a origem pública da API:
+
+```env
+VITE_API_URL=https://credit-decision-api.onrender.com
+```
+
+Como o Vite incorpora essa origem no bundle, `VITE_API_URL` também participa do
+hash da tarefa de build do web no Turborepo. Uma alteração de ambiente não pode
+reutilizar um artefato em cache produzido para outra API.
+
+O ambiente do Vitest fixa `VITE_API_URL` como vazia. Os testes de comportamento
+continuam validando deliberadamente o proxy local `/api`, sem depender das
+variáveis herdadas do terminal ou da máquina que executa a suíte. Os testes
+unitários do resolvedor continuam cobrindo explicitamente a origem hospedada.
+
+Após a primeira URL de produção ser atribuída, essa origem deve ser cadastrada
+como `WEB_ORIGIN` no Render e a API deve ser redeployada. A validação final deve
+confirmar rotas diretas, health, login com cookie e estado de inicialização do
+plano gratuito.
+
 ## 10. Estratégia de testes
 
 ### Contratos
