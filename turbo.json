@@ -11,6 +11,8 @@
       "outputs": ["dist/**", "storybook-static/**"]
     },
     "@credit-decision-hub/web#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
       "env": ["VITE_API_URL"]
     },
     "dev": {
