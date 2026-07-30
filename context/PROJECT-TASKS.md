@@ -175,6 +175,17 @@ Preparação da terceira subetapa:
   confirmado com status `200` e o contrato esperado;
 - `lint`, `typecheck`, 186 testes e build completo aprovados.
 
+Evidência do deploy da API:
+
+- Blueprint sincronizado no Render a partir do commit `bb43d2a`;
+- build hospedado concluiu a compilação da API e de `packages/contracts`;
+- primeira inicialização identificou corretamente o bloqueio de rede do Atlas;
+- intervalos de saída do serviço foram autorizados no Atlas sem liberar acesso
+  irrestrito;
+- Web Service iniciou com o comando de produção e conectou ao MongoDB;
+- `GET https://credit-decision-api.onrender.com/health` respondeu `200` com
+  `{"status":"ok","service":"credit-decision-api"}`.
+
 ## 7. Entregas concluídas
 
 | ID | Entrega | Commit | Evidência |
@@ -201,11 +212,11 @@ Preparação da terceira subetapa:
 - última tarefa concluída: `CDH-014`;
 - tarefa ativa: `CDH-015`;
 - subetapas concluídas: prontidão cross-origin, workflow de qualidade e primeira
-  execução verde no GitHub Actions;
-- próxima ação: sincronizar o Blueprint e validar o primeiro deploy da API no
+  execução verde no GitHub Actions, Blueprint e primeiro deploy da API no
   Render;
-- bloqueio: a criação do Web Service e o cadastro dos segredos dependem da conta
-  do usuário no Render;
+- próxima ação: preparar e publicar o front-end na Vercel;
+- bloqueio: a URL pública da Vercel ainda não existe para configurar
+  `WEB_ORIGIN` na API;
 - push: não realizado nesta entrega.
 
 Ao encerrar uma tarefa, registrar:
