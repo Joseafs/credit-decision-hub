@@ -19,8 +19,8 @@ A API utiliza o plano gratuito do Render e pode entrar em suspensão quando fica
 sem uso. A primeira requisição pode levar cerca de um minuto; a interface trata
 esse cold start com uma mensagem específica.
 
-As áreas autenticadas não possuem credenciais públicas no repositório. Para uma
-demonstração em entrevista, utilize previamente um usuário fictício criado no
+As áreas autenticadas não possuem credenciais públicas no repositório. A
+validação desses fluxos requer um usuário fictício previamente criado no
 ambiente da POC.
 
 ## Arquitetura
@@ -64,7 +64,7 @@ context/         requisitos, SDD, decisões e histórico das tarefas
 O monorepo usa pnpm workspaces e Turborepo para coordenar dependências, builds,
 testes, lint e typecheck.
 
-## O que este case demonstra
+## Capacidades implementadas
 
 ### Arquitetura e código
 
@@ -106,12 +106,12 @@ testes, lint e typecheck.
 - decisões de produto e tecnologia centralizadas em poucos documentos
   canônicos.
 
-## Roteiro para demonstrar em uma entrevista
+## Roteiro de demonstração
 
-### 1. Apresentar o problema e a arquitetura
+### 1. Arquitetura e fronteiras
 
-Explique que o objetivo não é simular um banco real, mas demonstrar uma
-plataforma full-stack com fronteiras claras. Mostre o diagrama acima e destaque:
+O fluxo começa pela leitura do diagrama e pela identificação das
+responsabilidades de cada camada:
 
 - React não acessa o banco diretamente;
 - Fastify concentra regras, segurança e integrações;
@@ -119,25 +119,25 @@ plataforma full-stack com fronteiras claras. Mostre o diagrama acima e destaque:
 - Databricks atende processamento analítico;
 - Zod conecta as fronteiras sem duplicar tipos manualmente.
 
-### 2. Validar a implantação pública
+### 2. Validação da implantação pública
 
-1. Abra o front-end e observe o estado de conexão com a API.
-2. Acesse `/health` para comprovar que a API está ativa.
-3. Abra o Swagger e mostre os contratos HTTP.
-4. Entre com o usuário fictício preparado para a demonstração.
+1. Acessar o front-end e observar o estado de conexão com a API.
+2. Consultar `/health` e confirmar a resposta do serviço.
+3. Abrir o Swagger e inspecionar os contratos HTTP.
+4. Autenticar com um usuário fictício do ambiente da POC.
 
-### 3. Percorrer o fluxo funcional
+### 3. Validação do fluxo funcional
 
-1. Consulte clientes e abra seus detalhes.
-2. Cadastre um cliente fictício.
-3. Crie uma proposta e mostre a decisão automática.
-4. Use filtros navegáveis e abra o histórico da proposta.
-5. Registre uma decisão manual permitida.
-6. Mostre dashboard, auditoria e indicadores analíticos.
-7. Se estiver como administrador, mostre a gestão de analistas e as diferenças
+1. Consultar clientes e acessar seus detalhes.
+2. Cadastrar um cliente fictício.
+3. Criar uma proposta e verificar a decisão automática.
+4. Aplicar filtros navegáveis e consultar o histórico da proposta.
+5. Registrar uma decisão manual permitida.
+6. Consultar dashboard, auditoria e indicadores analíticos.
+7. Com o papel de administrador, validar a gestão de analistas e as diferenças
    de permissão.
 
-### 4. Mostrar qualidade e DX
+### 4. Qualidade e experiência de desenvolvimento
 
 Na raiz do projeto, execute:
 
@@ -149,7 +149,8 @@ pnpm test
 pnpm build
 ```
 
-Os mesmos gates fazem parte do GitHub Actions. Mostre também:
+Os mesmos gates fazem parte do GitHub Actions. O catálogo de componentes pode
+ser validado com:
 
 ```powershell
 pnpm storybook
@@ -157,9 +158,9 @@ pnpm storybook
 
 O Storybook abre o catálogo da biblioteca `packages/ui`.
 
-### 5. Explicar o Terraform
+### 5. Infraestrutura como código
 
-Mostre `infrastructure/terraform` e explique:
+A configuração em `infrastructure/terraform` registra que:
 
 - os recursos já existiam antes do Terraform;
 - `import` associou código, state local e recursos reais;
@@ -169,7 +170,7 @@ Mostre `infrastructure/terraform` e explique:
   destruições;
 - nenhum `apply` foi necessário para cumprir o objetivo educacional.
 
-### 6. Encerrar com os trade-offs
+### 6. Decisões e trade-offs
 
 - Render Free reduz custo, mas introduz cold start;
 - state Terraform local é suficiente para o exercício individual, mas uma
@@ -238,5 +239,5 @@ A documentação canônica está centralizada em:
 - [`context/PROJECT-TASKS.md`](./context/PROJECT-TASKS.md): evolução incremental
   e evidências de cada entrega.
 
-Essa separação permite apresentar não apenas o código final, mas também o
-raciocínio, os trade-offs e a evolução arquitetural do projeto.
+Essa separação permite compreender o código final, o raciocínio, os trade-offs
+e a evolução arquitetural do projeto.
