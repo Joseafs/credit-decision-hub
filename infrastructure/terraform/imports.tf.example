@@ -1,0 +1,29 @@
+# Copie temporariamente os blocos necessários para imports.tf e substitua os
+# placeholders pelos identificadores existentes. Remova imports.tf após a
+# importação; ele é ignorado pelo Git.
+
+import {
+  to = vercel_project.web
+  id = "prj_SUBSTITUA_PELO_PROJECT_ID"
+}
+
+import {
+  to = vercel_project_environment_variable.api_origin
+  id = "prj_SUBSTITUA_PELO_PROJECT_ID/SUBSTITUA_PELO_ENVIRONMENT_ID"
+}
+
+import {
+  to = mongodbatlas_project.poc
+  id = "SUBSTITUA_PELO_ATLAS_PROJECT_ID"
+}
+
+import {
+  to = mongodbatlas_advanced_cluster.poc
+  id = "SUBSTITUA_PELO_ATLAS_PROJECT_ID-Cluster0"
+}
+
+# Repita um bloco para cada CIDR configurado em atlas_access_cidrs.
+import {
+  to = mongodbatlas_project_ip_access_list.render["192.0.2.0/24"]
+  id = "SUBSTITUA_PELO_ATLAS_PROJECT_ID-192.0.2.0/24"
+}

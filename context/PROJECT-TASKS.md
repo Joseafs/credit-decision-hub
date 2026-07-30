@@ -151,18 +151,18 @@ Fora do escopo:
 
 Entregas:
 
-- [ ] definir a matriz de propriedade entre Terraform, Blueprint e painéis;
-- [ ] criar `infrastructure/terraform` sem novos arquivos Markdown;
-- [ ] configurar e fixar as versões do Terraform e dos providers;
-- [ ] modelar Vercel e Atlas sem duplicar segredos;
-- [ ] fornecer exemplo seguro de variáveis locais;
-- [ ] ignorar state, planos e arquivos locais sensíveis;
-- [ ] executar `terraform fmt -check`;
-- [ ] executar `terraform init` e `terraform validate`;
+- [x] definir a matriz de propriedade entre Terraform, Blueprint e painéis;
+- [x] criar `infrastructure/terraform` sem novos arquivos Markdown;
+- [x] configurar e fixar as versões do Terraform e dos providers;
+- [x] modelar Vercel e Atlas sem duplicar segredos;
+- [x] fornecer exemplo seguro de variáveis locais;
+- [x] ignorar state, planos e arquivos locais sensíveis;
+- [x] executar `terraform fmt -check`;
+- [x] executar `terraform init` e `terraform validate`;
 - [ ] importar os recursos existentes de forma controlada;
 - [ ] executar e revisar um `terraform plan` real sem destruição ou recriação
   não intencional;
-- [ ] registrar no SDD o que o exercício demonstrou e seus limites.
+- [x] registrar no SDD o que o exercício demonstrou e seus limites.
 
 Critérios de conclusão:
 
@@ -179,6 +179,25 @@ Pré-requisitos externos para a validação real:
 - token da Vercel configurado somente no ambiente local;
 - credencial de Service Account do Atlas configurada somente no ambiente local;
 - identificadores dos projetos e recursos existentes.
+
+Evidência da configuração estática:
+
+- Terraform oficial `1.15.8` executado de forma portátil após validação do
+  SHA-256 publicado pela HashiCorp;
+- providers `vercel/vercel 5.4.1` e `mongodb/mongodbatlas 2.14.0` instalados e
+  fixados no lockfile;
+- `terraform fmt -check`, `terraform init -backend=false` e
+  `terraform validate` aprovados;
+- projeto e variável pública da Vercel modelados;
+- projeto, cluster M0 e lista de acesso do Atlas modelados;
+- todos os recursos protegidos por `prevent_destroy`;
+- Render explicitamente mantido sob propriedade do `render.yaml`;
+- usuário de banco e segredos excluídos do state;
+- exemplos de variáveis e importação contêm somente placeholders;
+- `.terraform`, variáveis locais, imports temporários, states e planos
+  confirmados como ignorados pelo Git.
+- `pnpm lint`, `pnpm typecheck`, 187 testes e `pnpm build` aprovados após a
+  inclusão do complemento.
 
 ## 7. Tarefa concluída mais recente
 
@@ -319,11 +338,11 @@ Avaliação do Terraform:
 - subetapas concluídas: prontidão cross-origin, workflow de qualidade, deploy
   da API no Render, deploy do front-end na Vercel, integração com Atlas,
   validação autenticada, tratamento do cold start e avaliação do Terraform;
-- próxima ação: criar a configuração Terraform complementar e validar sua
-  estrutura antes de solicitar credenciais;
+- próxima ação: configurar credenciais administrativas somente no ambiente
+  local, preencher os identificadores e importar os recursos existentes;
 - bloqueio para a configuração estática: nenhum;
-- dependências da validação real: Terraform CLI e credenciais locais da Vercel
-  e do Atlas;
+- dependências da validação real: credenciais locais da Vercel e do Atlas,
+  identificadores dos projetos, região exata do cluster e CIDRs existentes;
 - push: não realizado nesta entrega.
 
 Ao encerrar uma tarefa, registrar:

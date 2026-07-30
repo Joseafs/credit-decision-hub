@@ -1,0 +1,14 @@
+# Copie para terraform.tfvars somente no ambiente local.
+# O arquivo terraform.tfvars é ignorado pelo Git.
+
+vercel_team_id = null
+
+atlas_organization_id      = "000000000000000000000000"
+atlas_project_name         = "credit-decision-hub"
+atlas_cluster_name         = "Cluster0"
+atlas_backing_provider_name = "GCP"
+atlas_region_name          = "REGIAO_ATLAS_EXISTENTE"
+
+atlas_access_cidrs = [
+  "192.0.2.0/24",
+]

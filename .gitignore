@@ -5,6 +5,14 @@ dist/
 storybook-static/
 /artifacts/
 
+infrastructure/terraform/.terraform/
+infrastructure/terraform/*.tfstate
+infrastructure/terraform/*.tfstate.*
+infrastructure/terraform/*.tfplan
+infrastructure/terraform/*.tfvars
+infrastructure/terraform/imports.tf
+!infrastructure/terraform/*.tfvars.example
+
 .env
 .env.*
 !.env.example

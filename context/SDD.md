@@ -988,6 +988,31 @@ importação controlada, state protegido e um `plan` revisado. Um `apply` só se
 aceitável quando o plano não propuser recriação ou destruição e quando a
 alteração pretendida estiver explicitamente aprovada.
 
+A configuração estática da `CDH-017` foi organizada em
+`infrastructure/terraform`:
+
+- Terraform `1.15.x`, provider Vercel `5.4.1` e provider MongoDB Atlas `2.14.0`;
+- lockfile versionado com as seleções e checksums dos providers;
+- `vercel_project` para projeto, framework, raiz do monorepo e integração Git;
+- `vercel_project_environment_variable` para a origem pública não secreta da
+  API;
+- `mongodbatlas_project` para o projeto existente;
+- `mongodbatlas_advanced_cluster` para o cluster M0;
+- `mongodbatlas_project_ip_access_list` para os CIDRs de saída do Render;
+- `prevent_destroy` em todos os recursos modelados;
+- exemplo local de variáveis e imports declarativos sem identificadores reais.
+
+O usuário de banco do Atlas não é gerenciado nesta primeira adoção. Sua senha
+entraria no state mesmo que a variável fosse marcada como sensível; manter essa
+credencial no painel demonstra que `sensitive` oculta a saída, mas não remove o
+valor do state. Tokens administrativos também são lidos diretamente das
+variáveis de ambiente esperadas pelos providers e não possuem variáveis ou
+valores no código.
+
+`.terraform`, `terraform.tfvars`, `imports.tf`, states e planos locais são
+ignorados pelo Git. O lockfile permanece versionado, pois ele protege a seleção
+reproduzível dos providers e não contém credenciais.
+
 ## 10. Estratégia de testes
 
 ### Contratos
