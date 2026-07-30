@@ -33,9 +33,13 @@ As decisões de produto pertencem ao [`README.md`](./README.md). As decisões t�
 
 | Ordem | ID | Fase | Estado | Entrega |
 | --- | --- | --- | --- | --- |
-| 1 | `CDH-017` | Complemento | `DONE` | Demonstrar Terraform sobre a infraestrutura existente |
+| 1 | `CDH-018` | Complemento analítico | `ACTIVE` | Definir contratos e estado da atualização analítica sob demanda |
+| 2 | `CDH-019` | Complemento analítico | `NEXT` | Enviar o snapshot validado ao Volume do Databricks |
+| 3 | `CDH-020` | Complemento analítico | `PLANNED` | Disparar e acompanhar o Job analítico no Databricks |
+| 4 | `CDH-021` | Complemento analítico | `PLANNED` | Integrar o controle de atualização ao dashboard administrativo |
+| 5 | `CDH-022` | Complemento analítico | `PLANNED` | Validar o fluxo completo no ambiente publicado |
 
-Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados somente quando se tornarem próximos, evitando especificação prematura.
+`CDH-018` a `CDH-022` formam uma evolução opcional posterior à POC concluída. A divisão preserva uma responsabilidade principal por commit e impede que integração externa, orquestração e interface sejam implementadas de uma só vez.
 
 `CDH-016` foi priorizada e concluída por solicitação explícita para estabelecer o design system durante a Fase 3. A ordem e os identificadores das tarefas já planejadas foram preservados.
 
@@ -120,91 +124,121 @@ Validação da terceira subetapa:
 
 ## 6. Tarefa ativa
 
-### `CDH-017` — Terraform como complemento de infraestrutura
+### `CDH-018` — Contratos e estado da atualização analítica
 
 Objetivo:
 
-Demonstrar, depois da conclusão funcional da POC, como Terraform descreve
-infraestrutura, associa código a recursos existentes, antecipa mudanças por
-meio do plano e identifica drift. A tarefa não faz parte do caminho necessário
-para executar ou apresentar a aplicação.
+Definir a fronteira interna de uma atualização analítica iniciada por um administrador, sem enviar arquivos nem executar recursos do Databricks nesta tarefa. O resultado deve permitir acompanhar uma execução, impedir concorrência indevida e preparar integrações posteriores sem acoplar rota, persistência e provedor externo.
 
 Escopo:
 
-- projeto do front-end na Vercel;
-- recursos compatíveis do projeto existente no MongoDB Atlas;
-- providers e versões fixados;
-- variáveis tipadas, sensíveis quando aplicável, e outputs úteis;
-- arquivos de state e planos protegidos contra versionamento;
-- importação dos recursos existentes;
-- validação estática e plano real revisado.
+- contratos Zod compartilhados para iniciar e consultar uma atualização;
+- estados explícitos de execução, incluindo fila, exportação, upload, processamento, sucesso e falha;
+- registro persistente da execução e da última atualização concluída;
+- identificador da execução, solicitante, datas, contagem de registros e erro sanitizado;
+- regra de no máximo uma atualização ativa;
+- autorização restrita a administradores;
+- services e repositories pequenos, com dependências estruturais testáveis.
 
 Fora do escopo:
 
-- recriar a POC em uma nova conta;
-- mover segredos para o código ou para arquivos versionados;
-- substituir o `render.yaml`;
-- controlar o mesmo serviço do Render por Blueprint e Terraform;
-- executar `apply` destrutivo;
-- adicionar Terraform ao fluxo de inicialização local da aplicação;
-- automatizar `apply` pela CI nesta primeira adoção.
+- gerar ou enviar o NDJSON ao Databricks;
+- chamar Files API, Jobs API ou Statement Execution API adicional;
+- criar o Job no workspace;
+- adicionar botão, polling ou mensagens no front-end;
+- alterar o notebook PySpark ou as tabelas Gold;
+- armazenar token, conteúdo do dataset ou resposta bruta externa no MongoDB.
 
 Entregas:
 
-- [x] definir a matriz de propriedade entre Terraform, Blueprint e painéis;
-- [x] criar `infrastructure/terraform` sem novos arquivos Markdown;
-- [x] configurar e fixar as versões do Terraform e dos providers;
-- [x] modelar Vercel e Atlas sem duplicar segredos;
-- [x] fornecer exemplo seguro de variáveis locais;
-- [x] ignorar state, planos e arquivos locais sensíveis;
-- [x] executar `terraform fmt -check`;
-- [x] executar `terraform init` e `terraform validate`;
-- [x] importar os recursos existentes de forma controlada;
-- [x] executar e revisar um `terraform plan` real sem destruição ou recriação
-  não intencional;
-- [x] registrar no SDD o que o exercício demonstrou e seus limites.
+- [ ] definir `analyticsRefreshStatusSchema` e contratos de resposta;
+- [ ] modelar a persistência de execuções analíticas;
+- [ ] implementar criação e consulta do estado por service;
+- [ ] rejeitar uma segunda execução enquanto existir outra ativa;
+- [ ] restringir a operação ao papel de administrador;
+- [ ] cobrir contratos, repository, service e autorização com testes;
+- [ ] registrar a fronteira técnica no `SDD.md`.
 
 Critérios de conclusão:
 
-- a configuração é legível, pequena e separada por responsabilidade;
-- nenhuma credencial ou state é versionado;
-- o plano associa código aos recursos reais existentes;
-- nenhuma alteração destrutiva é aplicada;
-- os gates do monorepo continuam aprovados;
-- comandos e evidências reais são registrados neste router.
+- o domínio de atualização não depende diretamente de HTTP ou Databricks;
+- estados e transições inválidas são rejeitados;
+- erros persistidos não expõem credenciais ou payloads externos;
+- a execução ativa é única mesmo sob solicitações concorrentes;
+- os gates do monorepo permanecem aprovados;
+- este router contém comandos, testes e evidências reais da entrega.
 
-Pré-requisitos externos para a validação real:
+## 6.1 Próximas tarefas
 
-- Terraform CLI instalado localmente;
-- token da Vercel configurado somente no ambiente local;
-- credencial de Service Account do Atlas configurada somente no ambiente local;
-- identificadores dos projetos e recursos existentes.
+### `CDH-019` — Upload programático do snapshot
 
-Evidência da configuração estática:
+Objetivo:
 
-- Terraform oficial `1.15.8` executado de forma portátil após validação do
-  SHA-256 publicado pela HashiCorp;
-- providers `vercel/vercel 5.4.1` e `mongodb/mongodbatlas 2.14.0` instalados e
-  fixados no lockfile;
-- `terraform fmt -check`, `terraform init -backend=false` e
-  `terraform validate` aprovados;
-- projeto e variável pública da Vercel modelados;
-- projeto, cluster M0 e lista de acesso do Atlas modelados;
-- todos os recursos protegidos por `prevent_destroy`;
-- Render explicitamente mantido sob propriedade do `render.yaml`;
-- usuário de banco e segredos excluídos do state;
-- exemplos de variáveis e importação contêm somente placeholders;
-- `.terraform`, variáveis locais, imports temporários, states e planos
-  confirmados como ignorados pelo Git.
-- `pnpm lint`, `pnpm typecheck`, 187 testes e `pnpm build` aprovados após a
-  inclusão do complemento.
-- seis recursos existentes associados ao state local: projeto e variável da
-  Vercel; projeto, cluster e dois CIDRs do Atlas;
-- primeiro plano detectou três substituições e foi bloqueado por
-  `prevent_destroy`, sem executar alterações;
-- configuração alinhada ao ambiente real e plano final revisado com `0` para
-  adicionar, `2` atualizações em-place da Vercel e `0` para destruir;
-- nenhum `terraform apply` executado.
+Reutilizar a exportação já validada para produzir o snapshot atual do MongoDB dentro do fluxo da API e enviá-lo ao Volume do Unity Catalog pela Files API.
+
+Entregas planejadas:
+
+- extrair do comando local um serviço reutilizável sem quebrar `pnpm analytics:export`;
+- gerar o NDJSON em destino temporário seguro;
+- enviar somente o contrato analítico `v1` ao caminho configurado do Volume;
+- substituir o arquivo anterior somente depois da exportação completa;
+- remover arquivos temporários em sucesso ou falha;
+- atualizar o estado da execução durante exportação e upload;
+- testar exportação, upload, limpeza, falhas externas e ausência de dados proibidos.
+
+### `CDH-020` — Execução e acompanhamento do Job
+
+Objetivo:
+
+Disparar um Job já configurado no Databricks para executar `process_proposals.py` e acompanhar a execução até um estado terminal.
+
+Entregas planejadas:
+
+- validar `DATABRICKS_JOB_ID` e demais configurações como conjunto;
+- iniciar o Job com token de idempotência associado à execução interna;
+- armazenar somente o identificador necessário da execução externa;
+- consultar o estado sem reenviar o Job;
+- mapear sucesso, cancelamento, timeout e falha para o domínio interno;
+- expor endpoints administrativos para iniciar e consultar a atualização;
+- preservar `GET /analytics/summary` e o dashboard operacional quando o Job falhar.
+
+### `CDH-021` — Controle administrativo no dashboard
+
+Objetivo:
+
+Permitir que um administrador inicie a atualização e acompanhe seu progresso sem bloquear o restante da interface.
+
+Entregas planejadas:
+
+- exibir o botão “Atualizar dados analíticos” somente para administradores;
+- desabilitar nova solicitação durante uma execução ativa;
+- apresentar etapa atual, última conclusão e erro compreensível;
+- consultar o status em intervalo controlado enquanto houver processamento;
+- recarregar `GET /analytics/summary` após o sucesso;
+- preservar temas, PT-BR, inglês, acessibilidade e testes comportamentais.
+
+### `CDH-022` — Validação hospedada e operação
+
+Objetivo:
+
+Confirmar no ambiente publicado que uma alteração no MongoDB percorre exportação, upload, Job, tabelas Gold e dashboard sem intervenção manual.
+
+Entregas planejadas:
+
+- criar ou validar o Job no workspace apontando para o notebook versionado;
+- configurar no Render apenas identificadores e credenciais necessários;
+- confirmar permissões mínimas para Volume, Job e consulta SQL;
+- executar smoke test com mudança observável na contagem analítica;
+- validar concorrência, timeout, falha e nova tentativa;
+- registrar duração, contagem processada e horário da última atualização;
+- atualizar `README.md`, `SDD.md` e este router com evidências finais.
+
+Pré-requisitos externos das tarefas posteriores:
+
+- Job criado no Databricks e associado ao notebook versionado;
+- token ou identidade da API com permissões mínimas para Files API, Jobs API e SQL;
+- identificador do Job e caminho do Volume configurados somente no Render;
+- disponibilidade da Free Edition para executar o fluxo durante o smoke test.
 
 ## 7. Tarefa concluída mais recente
 
@@ -354,14 +388,13 @@ Avaliação do Terraform:
 
 - branch: `main`;
 - última tarefa concluída: `CDH-017`;
-- tarefa ativa: nenhuma;
-- subetapas concluídas: prontidão cross-origin, workflow de qualidade, deploy
-  da API no Render, deploy do front-end na Vercel, integração com Atlas,
-  validação autenticada, tratamento do cold start e avaliação do Terraform;
-- próxima ação: definir uma nova tarefa somente quando houver objetivo aprovado;
-- bloqueio para a configuração estática: nenhum;
-- dependências da validação real: nenhuma;
-- push: não realizado nesta entrega.
+- tarefa ativa: `CDH-018`;
+- próximas tarefas: `CDH-019`, `CDH-020`, `CDH-021` e `CDH-022`;
+- objetivo aprovado: atualização analítica sob demanda iniciada por administrador;
+- próxima ação: implementar contratos, estados e persistência da execução sem integrar ainda com o Databricks;
+- bloqueio da tarefa ativa: nenhum;
+- dependências externas posteriores: Job, permissões mínimas e variáveis do Databricks no Render;
+- push: realizado por solicitação explícita para registrar o novo plano.
 
 Ao encerrar uma tarefa, registrar:
 
