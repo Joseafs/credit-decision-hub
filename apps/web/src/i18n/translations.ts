@@ -41,6 +41,8 @@ export const ptBRTranslations = {
   "home.action": "Gerenciar clientes",
   "home.apiTitle": "Estado da API",
   "home.apiLoading": "Conectando com a API...",
+  "home.apiStarting":
+    "A API de demonstração está iniciando. Isso pode levar alguns segundos.",
   "home.apiSuccess": "Front-end e API conectados",
   "home.apiError": "Não foi possível acessar a API",
   "home.apiErrorDescription":
@@ -320,6 +322,7 @@ export const enTranslations = {
   "home.action": "Manage customers",
   "home.apiTitle": "API status",
   "home.apiLoading": "Connecting to the API...",
+  "home.apiStarting": "The demo API is starting. This may take a few seconds.",
   "home.apiSuccess": "Front-end and API connected",
   "home.apiError": "The API could not be reached",
   "home.apiErrorDescription":

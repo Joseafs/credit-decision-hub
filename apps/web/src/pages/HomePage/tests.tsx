@@ -1,5 +1,5 @@
 import { act, fireEvent, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { renderWithProviders } from "../../test/render";
 import { HomePage } from ".";
@@ -29,6 +29,10 @@ describe("HomePage", () => {
     vi.stubGlobal("fetch", fetchMock);
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   test("should show the loading state while checking the API", async () => {
     let resolveRequest: (response: Response) => void = () => undefined;
     const pendingRequest = new Promise<Response>((resolve) => {
@@ -55,6 +59,23 @@ describe("HomePage", () => {
       await screen.findByText("Front-end e API conectados"),
     ).toBeInTheDocument();
     expect(screen.getByText("credit-decision-api · ok")).toBeInTheDocument();
+  });
+
+  test("should explain the demo API startup when the request takes longer", async () => {
+    vi.useFakeTimers();
+    fetchMock.mockImplementation(() => new Promise<Response>(() => undefined));
+
+    componentRender();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5_000);
+    });
+
+    expect(
+      screen.getByText(
+        "A API de demonstração está iniciando. Isso pode levar alguns segundos.",
+      ),
+    ).toBeInTheDocument();
   });
 
   test("should show an error when the API request fails", async () => {

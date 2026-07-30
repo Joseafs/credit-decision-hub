@@ -33,13 +33,16 @@ As decisões de produto pertencem ao [`README.md`](./README.md). As decisões t�
 
 | Ordem | ID | Fase | Estado | Entrega |
 | --- | --- | --- | --- | --- |
-| 1 | `CDH-015` | 6 | `ACTIVE` | Implementar infraestrutura, CI/CD e deploy |
+| 1 | `CDH-015` | 6 | `DONE` | Implementar infraestrutura, CI/CD e deploy |
 
 Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados somente quando se tornarem próximos, evitando especificação prematura.
 
 `CDH-016` foi priorizada e concluída por solicitação explícita para estabelecer o design system durante a Fase 3. A ordem e os identificadores das tarefas já planejadas foram preservados.
 
-## 5. Última tarefa concluída
+Não existe tarefa ativa ou próxima definida. Uma nova entrega deverá ser
+especificada antes de alterar o código.
+
+## 5. Registros detalhados recentes
 
 ### `CDH-014` — Etapa analítica com Databricks
 
@@ -118,7 +121,7 @@ Validação da terceira subetapa:
 - pacote de UI: 5 testes aprovados;
 - `pnpm lint`, `pnpm typecheck`, `pnpm test` e `pnpm build` aprovados.
 
-## 6. Tarefa ativa
+## 6. Tarefa concluída mais recente
 
 ### `CDH-015` — Infraestrutura, CI/CD e deploy
 
@@ -128,9 +131,9 @@ Entregas:
   entre Vercel e Render;
 - [x] versionar o workflow de validações automatizadas no GitHub;
 - [x] confirmar a primeira execução verde no GitHub Actions;
-- [ ] preparar Vercel, Render e MongoDB Atlas conforme a arquitetura aprovada;
-- [ ] validar os deploys e o estado de inicialização da demonstração;
-- [ ] avaliar Terraform para os recursos suportados pelos provedores escolhidos.
+- [x] preparar Vercel, Render e MongoDB Atlas conforme a arquitetura aprovada;
+- [x] validar os deploys e o estado de inicialização da demonstração;
+- [x] avaliar Terraform para os recursos suportados pelos provedores escolhidos.
 
 Evidência da primeira subetapa:
 
@@ -202,6 +205,32 @@ Preparação da Vercel:
   produção;
 - `lint`, `typecheck`, 186 testes e build completo aprovados.
 
+Evidência do deploy completo:
+
+- front-end público em `https://credit-decision-hub-web.vercel.app`;
+- página inicial, `/login` e `/customers` responderam `200` em acesso direto;
+- API pública em `https://credit-decision-api.onrender.com`;
+- `GET /health` respondeu `200` com o contrato compartilhado esperado;
+- preflight respondeu `204` com a origem exata da Vercel e credenciais
+  habilitadas;
+- login hospedado confirmado pelo usuário, validando cookie, CORS, API e Atlas
+  no fluxo real;
+- carregamento prolongado agora informa que a API de demonstração pode estar
+  iniciando, em PT-BR e inglês;
+- comportamento de cold start coberto por teste com temporizador controlado.
+
+Avaliação do Terraform:
+
+- Render, Vercel e MongoDB Atlas possuem providers compatíveis;
+- o Blueprint do Render permanece como fonte declarativa recomendada para o
+  único serviço da plataforma;
+- Vercel e Atlas permanecem conectados e administrados pelos respectivos
+  painéis, preservando os recursos existentes;
+- Terraform foi dispensado nesta POC para evitar dupla propriedade, estado
+  local com dados sensíveis e risco de recriação de recursos com dados;
+- adoção futura exige importação controlada, estado remoto protegido e revisão
+  do `plan` antes de qualquer alteração.
+
 ## 7. Entregas concluídas
 
 | ID | Entrega | Commit | Evidência |
@@ -220,19 +249,19 @@ Preparação da Vercel:
 | `CDH-012` | Autenticação e permissões | `feat(auth): implementar autenticação e permissões (CDH-012)` | 144 testes, JWT HttpOnly, scrypt, papéis, bootstrap, rotas protegidas, gestão de analistas e decisões manuais validados |
 | `CDH-013` | Dashboard e auditoria | `feat(dashboard): implementar indicadores e auditoria (CDH-013)` | 157 testes, agregações sobre 1.000 propostas no Atlas, visão por papel, auditoria paginada, contratos estritos e gates aprovados |
 | `CDH-014` | Etapa analítica com Databricks | `feat(analytics): integrar resultados ao dashboard (CDH-014)` | exportação reproduzível, notebook PySpark, tabelas Delta, endpoint protegido, 179 testes e smoke test real aprovados |
+| `CDH-015` | Infraestrutura, CI/CD e deploy | `feat(infra): concluir deploy demonstrativo (CDH-015)` | GitHub Actions verde, Vercel, Render e Atlas integrados, login hospedado, cold start tratado e Terraform avaliado |
 | `CDH-016` | Design system e Storybook | `feat(ui): criar design system com Storybook (CDH-016)` | 127 testes, três componentes compartilhados, temas centralizados, catálogo estático e inspeção visual aprovados |
 
 ## 8. Handoff atual
 
 - branch: `main`;
-- última tarefa concluída: `CDH-014`;
-- tarefa ativa: `CDH-015`;
-- subetapas concluídas: prontidão cross-origin, workflow de qualidade e primeira
-  execução verde no GitHub Actions, Blueprint e primeiro deploy da API no
-  Render;
-- próxima ação: preparar e publicar o front-end na Vercel;
-- bloqueio: a URL pública da Vercel ainda não existe para configurar
-  `WEB_ORIGIN` na API;
+- última tarefa concluída: `CDH-015`;
+- tarefa ativa: nenhuma;
+- subetapas concluídas: prontidão cross-origin, workflow de qualidade, deploy
+  da API no Render, deploy do front-end na Vercel, integração com Atlas,
+  validação autenticada, tratamento do cold start e avaliação do Terraform;
+- próxima ação: definir e especificar uma nova tarefa;
+- bloqueio: nenhum;
 - push: não realizado nesta entrega.
 
 Ao encerrar uma tarefa, registrar:

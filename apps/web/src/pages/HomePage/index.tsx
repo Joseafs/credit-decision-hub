@@ -11,14 +11,18 @@ type HealthRequestState =
   | { status: "success"; data: HealthResponse }
   | { status: "error" };
 
+const API_STARTUP_NOTICE_DELAY_MS = 5_000;
+
 export const HomePage = () => {
   const [healthState, setHealthState] = useState<HealthRequestState>({
     status: "loading",
   });
+  const [shouldShowStartupNotice, setShouldShowStartupNotice] = useState(false);
 
   const { translate } = useAppPreferences();
 
   const checkHealth = useCallback(async () => {
+    setShouldShowStartupNotice(false);
     setHealthState({ status: "loading" });
 
     try {
@@ -32,6 +36,20 @@ export const HomePage = () => {
   useEffect(() => {
     void checkHealth();
   }, [checkHealth]);
+
+  useEffect(() => {
+    if (healthState.status !== "loading") {
+      return;
+    }
+
+    const startupNoticeTimeout = window.setTimeout(() => {
+      setShouldShowStartupNotice(true);
+    }, API_STARTUP_NOTICE_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(startupNoticeTimeout);
+    };
+  }, [healthState.status]);
 
   return (
     <section className="relative overflow-hidden rounded-3xl border border-border bg-surface px-6 py-10 shadow-sm sm:px-10 lg:py-16">
@@ -78,7 +96,13 @@ export const HomePage = () => {
 
           <div className="mt-6 min-h-20" aria-live="polite">
             {healthState.status === "loading" && (
-              <p className="text-warning">{translate("home.apiLoading")}</p>
+              <p className="text-warning">
+                {translate(
+                  shouldShowStartupNotice
+                    ? "home.apiStarting"
+                    : "home.apiLoading",
+                )}
+              </p>
             )}
 
             {healthState.status === "success" && (

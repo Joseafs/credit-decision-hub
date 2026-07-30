@@ -458,9 +458,9 @@ Testar:
 - manter o JWT de sessão em cookie `HttpOnly`, sem expô-lo ao JavaScript do navegador;
 - manter trilha de auditoria das decisões.
 
-## 14. Arquitetura de hospedagem prevista
+## 14. Arquitetura de hospedagem
 
-Esta seção registra somente a decisão arquitetural. Nenhum serviço de deploy deve ser configurado antes da Fase 6.
+Esta arquitetura foi aprovada anteriormente e efetivada na Fase 6.
 
 ```txt
 GitHub
@@ -550,7 +550,7 @@ MONGODB_URI=<configurar como segredo no Render>
 MONGODB_DATABASE=credit-decision-hub
 AUTH_JWT_SECRET=<configurar como segredo no Render>
 AUTH_SECURE_COOKIE=true
-WEB_ORIGIN=https://credit-decision-hub.vercel.app
+WEB_ORIGIN=https://credit-decision-hub-web.vercel.app
 DATABRICKS_HOST=https://<workspace>.cloud.databricks.com
 DATABRICKS_WAREHOUSE_ID=<configurar no Render>
 DATABRICKS_TOKEN=<configurar como segredo no Render>
@@ -568,7 +568,7 @@ Regras:
 - `MONGODB_DNS_SERVERS` permanece opcional e só deve ser configurada se o ambiente exigir;
 - novas variáveis só devem ser adicionadas quando a implementação correspondente existir.
 
-### 14.4 Pré-requisitos para o deploy futuro
+### 14.4 Estado da hospedagem
 
 Já atendidos pelo código:
 
@@ -577,14 +577,15 @@ Já atendidos pelo código:
 - manter `SameSite=Lax` no desenvolvimento e usar `SameSite=None` com `Secure`
   somente no ambiente hospedado.
 
-Antes de configurar os serviços, ainda será necessário:
+Implementado e validado:
 
-- definir diretórios raiz, comandos de build e start para cada aplicação do monorepo;
-- usar `GET /health` como health check da API;
-- configurar no Atlas somente os intervalos de saída informados pelo serviço Render;
-- validar a estratégia de rotas do React Router na Vercel;
-- implementar no front-end o estado visual de inicialização da API;
-- revisar novamente preços, cotas e limitações dos três provedores.
+- Vercel em `https://credit-decision-hub-web.vercel.app`;
+- Render em `https://credit-decision-api.onrender.com`;
+- `GET /health` como health check da API;
+- Atlas restrito aos intervalos de saída informados pelo Render;
+- fallback das rotas do React Router na Vercel;
+- mensagem específica no front-end quando a inicialização da API demora;
+- login com cookie seguro e CORS restrito entre as origens públicas.
 
 Não liberar `0.0.0.0/0` no Atlas como configuração padrão. O Atlas deve permitir somente as origens necessárias, usando os intervalos CIDR de saída exibidos no painel do serviço Render.
 
@@ -595,7 +596,10 @@ Referências oficiais consultadas:
 - [Railway — Pricing plans](https://docs.railway.com/pricing/plans);
 - [Vercel — Monorepos](https://vercel.com/docs/monorepos);
 - [Vercel — Vite](https://vercel.com/docs/frameworks/frontend/vite);
-- [MongoDB Atlas — IP access list](https://www.mongodb.com/docs/atlas/security/add-ip-address-to-list/).
+- [MongoDB Atlas — IP access list](https://www.mongodb.com/docs/atlas/security/add-ip-address-to-list/);
+- [Render — Terraform provider](https://render.com/docs/terraform-provider);
+- [Vercel — integração com Terraform](https://vercel.com/kb/guide/integrating-terraform-with-vercel);
+- [MongoDB Atlas — Terraform provider](https://registry.terraform.io/providers/mongodb/mongodbatlas/latest).
 
 ## 15. Entrega incremental
 
@@ -644,7 +648,8 @@ Referências oficiais consultadas:
 
 - adicionar Docker;
 - configurar GitHub Actions;
-- criar Terraform;
+- avaliar Terraform e adotá-lo somente para recursos com propriedade e estado
+  claramente definidos;
 - preparar deploy gratuito ou demonstrativo.
 
 ## 16. Regras para agentes

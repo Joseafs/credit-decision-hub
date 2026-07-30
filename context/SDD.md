@@ -40,12 +40,10 @@ Implementado:
 - consumo protegido dos KPIs do Databricks pela API e pelo dashboard;
 - comunicação autenticada configurável entre web e API hospedadas em origens
   diferentes;
-- workflow de qualidade preparado para GitHub Actions;
+- workflow de qualidade executado pelo GitHub Actions;
+- front-end publicado na Vercel, API publicada no Render e banco operacional no
+  MongoDB Atlas;
 - temas claro e escuro e interface em PT-BR e inglês.
-
-Em execução:
-
-- infraestrutura, CI/CD e deploy.
 
 Não implementado:
 
@@ -910,10 +908,9 @@ Configuração versionada:
 
 `MONGODB_URI` e as três variáveis do Databricks usam `sync: false`, fazendo o
 Render solicitá-las na criação inicial do Blueprint sem versionar valores.
-`AUTH_JWT_SECRET` é gerado pelo próprio Render. `WEB_ORIGIN` ainda não integra o
-Blueprint porque depende da URL efetivamente atribuída pela Vercel; ela será
-adicionada ao ambiente do serviço antes da validação autenticada entre os
-provedores.
+`AUTH_JWT_SECRET` é gerado pelo próprio Render. `WEB_ORIGIN` é mantida no
+ambiente do serviço com a origem exata
+`https://credit-decision-hub-web.vercel.app`.
 
 ## 9.22 Preparação do front-end para a Vercel
 
@@ -941,10 +938,43 @@ continuam validando deliberadamente o proxy local `/api`, sem depender das
 variáveis herdadas do terminal ou da máquina que executa a suíte. Os testes
 unitários do resolvedor continuam cobrindo explicitamente a origem hospedada.
 
-Após a primeira URL de produção ser atribuída, essa origem deve ser cadastrada
-como `WEB_ORIGIN` no Render e a API deve ser redeployada. A validação final deve
-confirmar rotas diretas, health, login com cookie e estado de inicialização do
-plano gratuito.
+A produção usa `https://credit-decision-hub-web.vercel.app`. A página inicial,
+`/login` e `/customers` responderam `200` em acesso direto, confirmando o
+fallback da SPA. A preflight do Render respondeu `204` com a origem exata e
+credenciais habilitadas; o login hospedado confirmou o cookie entre as duas
+origens.
+
+O health check começa com uma mensagem curta de conexão. Se a requisição
+permanecer pendente por cinco segundos, a interface explica que a API de
+demonstração está iniciando. Sucesso e falha cancelam o temporizador, e uma nova
+tentativa reinicia o estado. Essa distinção atende ao cold start aceito no plano
+gratuito sem presumir que toda demora seja uma indisponibilidade.
+
+## 9.23 Fronteira do Terraform
+
+Os três provedores escolhidos possuem integração com Terraform. Apesar do
+suporte técnico, a POC mantém apenas um ambiente, já provisionado e validado,
+com deploy contínuo pelo GitHub.
+
+A fronteira adotada é:
+
+- o Render continua gerenciado pelo `render.yaml`; a própria documentação do
+  provedor recomenda Blueprints quando não é necessário coordenar
+  infraestrutura externa;
+- o projeto da Vercel continua conectado diretamente ao GitHub, com o
+  comportamento da aplicação versionado em `apps/web/vercel.json`;
+- cluster, usuário de banco e lista de acesso do Atlas continuam gerenciados no
+  painel para preservar os recursos e dados existentes;
+- variáveis e segredos permanecem nos painéis dos provedores, nunca no Git ou
+  no estado local do Terraform.
+
+Introduzir Terraform agora criaria uma segunda fonte de propriedade para
+recursos existentes e exigiria importação, credenciais administrativas e uma
+estratégia de estado remoto. Esse custo não melhora a disponibilidade ou a
+reprodutibilidade desta demonstração de ambiente único. Uma adoção futura deve
+começar pela importação controlada dos recursos, estado remoto protegido e
+`plan` revisado antes de qualquer `apply`; não deve recriar recursos que contêm
+dados.
 
 ## 10. Estratégia de testes
 
@@ -1042,6 +1072,8 @@ plano gratuito.
 | 2026-07-29 | Não adicionar Docker à arquitetura atual de hospedagem | Vercel e Render atendem os runtimes nativamente e um container não resolve uma necessidade concreta |
 | 2026-07-29 | Executar os gates da CI em um único job sem segredos | Reduzir minutos e duplicação de instalação enquanto o Turborepo paraleliza os pacotes |
 | 2026-07-29 | Fixar actions por SHA completo e limitar o token a leitura | Tornar as dependências imutáveis e aplicar menor privilégio ao workflow |
+| 2026-07-29 | Explicar o cold start após cinco segundos de espera | Distinguir a inicialização esperada do Render Free de uma conexão comum sem alarmar prematuramente o usuário |
+| 2026-07-29 | Manter Blueprint, integração Git e painéis como proprietários da infraestrutura atual | Evitar dupla propriedade e importação arriscada de recursos existentes apenas para introduzir Terraform |
 
 ## 13. Atualização deste documento
 
