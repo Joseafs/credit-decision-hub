@@ -68,7 +68,7 @@ variable "atlas_organization_id" {
 variable "atlas_project_name" {
   description = "Nome do projeto existente no MongoDB Atlas."
   type        = string
-  default     = "credit-decision-hub"
+  default     = "Credit Decision Hub"
 
   validation {
     condition     = length(trimspace(var.atlas_project_name)) > 0
@@ -104,6 +104,7 @@ variable "atlas_backing_provider_name" {
 variable "atlas_region_name" {
   description = "Região Atlas do cluster existente, como CENTRAL_US."
   type        = string
+  default     = "SOUTH_AMERICA_EAST_1"
 
   validation {
     condition     = length(trimspace(var.atlas_region_name)) > 0
@@ -114,7 +115,10 @@ variable "atlas_region_name" {
 variable "atlas_access_cidrs" {
   description = "CIDRs de saída do Render já autorizados no Atlas."
   type        = set(string)
-  default     = []
+  default = [
+    "74.220.48.0/24",
+    "74.220.56.0/24",
+  ]
 
   validation {
     condition = alltrue([
