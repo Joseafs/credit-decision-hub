@@ -44,7 +44,7 @@ variable "api_origin" {
 variable "vercel_environment_targets" {
   description = "Ambientes da Vercel que recebem VITE_API_URL."
   type        = set(string)
-  default     = ["production"]
+  default     = ["preview", "production"]
 
   validation {
     condition = length(var.vercel_environment_targets) > 0 && alltrue([
