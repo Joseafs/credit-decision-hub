@@ -652,6 +652,29 @@ Referências oficiais consultadas:
   claramente definidos;
 - preparar deploy gratuito ou demonstrativo.
 
+### Complemento técnico — Terraform
+
+O deploy funcional encerra a POC. Terraform será desenvolvido depois dela como
+um laboratório de infraestrutura como código, sem ser apresentado como
+dependência para executar ou demonstrar a aplicação.
+
+O complemento deve:
+
+- mostrar quais recursos da Vercel e do MongoDB Atlas podem ser descritos como
+  código;
+- demonstrar providers, variáveis, outputs, state, importação e detecção de
+  drift;
+- importar recursos existentes antes de qualquer tentativa de gerenciamento;
+- manter segredos e arquivos de state fora do Git;
+- preservar o `render.yaml` como fonte declarativa do serviço no Render;
+- impedir que Terraform e Blueprint controlem o mesmo recurso;
+- validar o plano antes de qualquer `apply`.
+
+O objetivo educacional é demonstrar o problema resolvido pelo Terraform:
+reprodutibilidade, revisão de mudanças, visibilidade sobre drift e redução de
+configurações manuais. O complemento não deve recriar nem destruir os recursos
+já usados pela POC.
+
 ## 16. Regras para agentes
 
 Antes de implementar:

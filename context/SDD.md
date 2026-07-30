@@ -950,7 +950,7 @@ demonstração está iniciando. Sucesso e falha cancelam o temporizador, e uma n
 tentativa reinicia o estado. Essa distinção atende ao cold start aceito no plano
 gratuito sem presumir que toda demora seja uma indisponibilidade.
 
-## 9.23 Fronteira do Terraform
+## 9.23 Terraform como complemento da POC
 
 Os três provedores escolhidos possuem integração com Terraform. Apesar do
 suporte técnico, a POC mantém apenas um ambiente, já provisionado e validado,
@@ -968,13 +968,25 @@ A fronteira adotada é:
 - variáveis e segredos permanecem nos painéis dos provedores, nunca no Git ou
   no estado local do Terraform.
 
-Introduzir Terraform agora criaria uma segunda fonte de propriedade para
-recursos existentes e exigiria importação, credenciais administrativas e uma
-estratégia de estado remoto. Esse custo não melhora a disponibilidade ou a
-reprodutibilidade desta demonstração de ambiente único. Uma adoção futura deve
-começar pela importação controlada dos recursos, estado remoto protegido e
-`plan` revisado antes de qualquer `apply`; não deve recriar recursos que contêm
-dados.
+Terraform não foi necessário para concluir o deploy da POC. A `CDH-017` o
+adiciona como complemento educacional isolado, destinado a demonstrar:
+
+- configuração e versionamento de providers;
+- declaração de variáveis e outputs;
+- papel do state no mapeamento entre código e recurso real;
+- importação de infraestrutura criada anteriormente;
+- leitura do plano e detecção de drift;
+- separação entre configuração versionável e segredo operacional.
+
+A primeira fronteira de estudo será Vercel e MongoDB Atlas. O Render permanece
+sob propriedade do `render.yaml`, pois colocar o mesmo Web Service sob
+Terraform criaria duas fontes declarativas concorrentes.
+
+O complemento começa sem autoridade para criar, alterar ou destruir os recursos
+existentes. Depois da configuração estática, a adoção exige credenciais locais,
+importação controlada, state protegido e um `plan` revisado. Um `apply` só será
+aceitável quando o plano não propuser recriação ou destruição e quando a
+alteração pretendida estiver explicitamente aprovada.
 
 ## 10. Estratégia de testes
 
@@ -1074,6 +1086,7 @@ dados.
 | 2026-07-29 | Fixar actions por SHA completo e limitar o token a leitura | Tornar as dependências imutáveis e aplicar menor privilégio ao workflow |
 | 2026-07-29 | Explicar o cold start após cinco segundos de espera | Distinguir a inicialização esperada do Render Free de uma conexão comum sem alarmar prematuramente o usuário |
 | 2026-07-29 | Manter Blueprint, integração Git e painéis como proprietários da infraestrutura atual | Evitar dupla propriedade e importação arriscada de recursos existentes apenas para introduzir Terraform |
+| 2026-07-29 | Implementar Terraform como complemento posterior à POC | Ensinar IaC, importação, state, plano e drift sem transformar a ferramenta em requisito artificial do deploy já concluído |
 
 ## 13. Atualização deste documento
 

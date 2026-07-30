@@ -33,14 +33,11 @@ As decisões de produto pertencem ao [`README.md`](./README.md). As decisões t�
 
 | Ordem | ID | Fase | Estado | Entrega |
 | --- | --- | --- | --- | --- |
-| 1 | `CDH-015` | 6 | `DONE` | Implementar infraestrutura, CI/CD e deploy |
+| 1 | `CDH-017` | Complemento | `ACTIVE` | Demonstrar Terraform sobre a infraestrutura existente |
 
 Os itens de fases posteriores são marcos de planejamento. Devem ser detalhados somente quando se tornarem próximos, evitando especificação prematura.
 
 `CDH-016` foi priorizada e concluída por solicitação explícita para estabelecer o design system durante a Fase 3. A ordem e os identificadores das tarefas já planejadas foram preservados.
-
-Não existe tarefa ativa ou próxima definida. Uma nova entrega deverá ser
-especificada antes de alterar o código.
 
 ## 5. Registros detalhados recentes
 
@@ -121,7 +118,69 @@ Validação da terceira subetapa:
 - pacote de UI: 5 testes aprovados;
 - `pnpm lint`, `pnpm typecheck`, `pnpm test` e `pnpm build` aprovados.
 
-## 6. Tarefa concluída mais recente
+## 6. Tarefa ativa
+
+### `CDH-017` — Terraform como complemento de infraestrutura
+
+Objetivo:
+
+Demonstrar, depois da conclusão funcional da POC, como Terraform descreve
+infraestrutura, associa código a recursos existentes, antecipa mudanças por
+meio do plano e identifica drift. A tarefa não faz parte do caminho necessário
+para executar ou apresentar a aplicação.
+
+Escopo:
+
+- projeto do front-end na Vercel;
+- recursos compatíveis do projeto existente no MongoDB Atlas;
+- providers e versões fixados;
+- variáveis tipadas, sensíveis quando aplicável, e outputs úteis;
+- arquivos de state e planos protegidos contra versionamento;
+- importação dos recursos existentes;
+- validação estática e plano real revisado.
+
+Fora do escopo:
+
+- recriar a POC em uma nova conta;
+- mover segredos para o código ou para arquivos versionados;
+- substituir o `render.yaml`;
+- controlar o mesmo serviço do Render por Blueprint e Terraform;
+- executar `apply` destrutivo;
+- adicionar Terraform ao fluxo de inicialização local da aplicação;
+- automatizar `apply` pela CI nesta primeira adoção.
+
+Entregas:
+
+- [ ] definir a matriz de propriedade entre Terraform, Blueprint e painéis;
+- [ ] criar `infrastructure/terraform` sem novos arquivos Markdown;
+- [ ] configurar e fixar as versões do Terraform e dos providers;
+- [ ] modelar Vercel e Atlas sem duplicar segredos;
+- [ ] fornecer exemplo seguro de variáveis locais;
+- [ ] ignorar state, planos e arquivos locais sensíveis;
+- [ ] executar `terraform fmt -check`;
+- [ ] executar `terraform init` e `terraform validate`;
+- [ ] importar os recursos existentes de forma controlada;
+- [ ] executar e revisar um `terraform plan` real sem destruição ou recriação
+  não intencional;
+- [ ] registrar no SDD o que o exercício demonstrou e seus limites.
+
+Critérios de conclusão:
+
+- a configuração é legível, pequena e separada por responsabilidade;
+- nenhuma credencial ou state é versionado;
+- o plano associa código aos recursos reais existentes;
+- nenhuma alteração destrutiva é aplicada;
+- os gates do monorepo continuam aprovados;
+- comandos e evidências reais são registrados neste router.
+
+Pré-requisitos externos para a validação real:
+
+- Terraform CLI instalado localmente;
+- token da Vercel configurado somente no ambiente local;
+- credencial de Service Account do Atlas configurada somente no ambiente local;
+- identificadores dos projetos e recursos existentes.
+
+## 7. Tarefa concluída mais recente
 
 ### `CDH-015` — Infraestrutura, CI/CD e deploy
 
@@ -231,7 +290,7 @@ Avaliação do Terraform:
 - adoção futura exige importação controlada, estado remoto protegido e revisão
   do `plan` antes de qualquer alteração.
 
-## 7. Entregas concluídas
+## 8. Entregas concluídas
 
 | ID | Entrega | Commit | Evidência |
 | --- | --- | --- | --- |
@@ -252,16 +311,19 @@ Avaliação do Terraform:
 | `CDH-015` | Infraestrutura, CI/CD e deploy | `feat(infra): concluir deploy demonstrativo (CDH-015)` | GitHub Actions verde, Vercel, Render e Atlas integrados, login hospedado, cold start tratado e Terraform avaliado |
 | `CDH-016` | Design system e Storybook | `feat(ui): criar design system com Storybook (CDH-016)` | 127 testes, três componentes compartilhados, temas centralizados, catálogo estático e inspeção visual aprovados |
 
-## 8. Handoff atual
+## 9. Handoff atual
 
 - branch: `main`;
 - última tarefa concluída: `CDH-015`;
-- tarefa ativa: nenhuma;
+- tarefa ativa: `CDH-017`;
 - subetapas concluídas: prontidão cross-origin, workflow de qualidade, deploy
   da API no Render, deploy do front-end na Vercel, integração com Atlas,
   validação autenticada, tratamento do cold start e avaliação do Terraform;
-- próxima ação: definir e especificar uma nova tarefa;
-- bloqueio: nenhum;
+- próxima ação: criar a configuração Terraform complementar e validar sua
+  estrutura antes de solicitar credenciais;
+- bloqueio para a configuração estática: nenhum;
+- dependências da validação real: Terraform CLI e credenciais locais da Vercel
+  e do Atlas;
 - push: não realizado nesta entrega.
 
 Ao encerrar uma tarefa, registrar:
